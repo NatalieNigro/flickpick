@@ -3,31 +3,39 @@
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  // User input
   const [vibe, setVibe] = useState("");
-
-  // Current AI results
   const [intro, setIntro] = useState("");
   const [movies, setMovies] = useState([]);
-
-  // Loading state
   const [loading, setLoading] = useState(false);
 
-  // Saved user movie memory
-  const [preferences, setPreferences] = useState({
-    loved: [],
-    hardPass: [],
-  });
+  // New memory format:
+  // one list of movies, each with a status
+  const [memory, setMemory] = useState([]);
 
-  // Load saved memory and last recommendations when page opens
   useEffect(() => {
-    const savedPreferences = localStorage.getItem("flickpickPreferences");
+    const savedMemory = localStorage.getItem("flickpickMemory");
+    const oldPreferences = localStorage.getItem("flickpickPreferences");
     const savedResults = localStorage.getItem("flickpickLastResults");
 
-    if (savedPreferences) {
-      setPreferences(JSON.parse(savedPreferences));
+    // Load new memory format if it exists
+    if (savedMemory) {
+      setMemory(JSON.parse(savedMemory));
     }
 
+    // Migrate old Loved and Hard Pass memory if needed
+    if (!savedMemory && oldPreferences) {
+      const parsed = JSON.parse(oldPreferences);
+
+      const migratedMemory = [
+        ...(parsed.loved || []).map((movie) => ({ ...movie, status: "loved" })),
+        ...(parsed.hardPass || []).map((movie) => ({ ...movie, status: "hardPass" })),
+      ];
+
+      setMemory(migratedMemory);
+      localStorage.setItem("flickpickMemory", JSON.stringify(migratedMemory));
+    }
+
+    // Reload last recommendations when returning to home page
     if (savedResults) {
       const parsedResults = JSON.parse(savedResults);
       setIntro(parsedResults.intro || "");
@@ -36,13 +44,11 @@ export default function Home() {
     }
   }, []);
 
-  // Save memory to browser
-  function savePreferences(newPreferences) {
-    setPreferences(newPreferences);
-    localStorage.setItem("flickpickPreferences", JSON.stringify(newPreferences));
+  function saveMemory(newMemory) {
+    setMemory(newMemory);
+    localStorage.setItem("flickpickMemory", JSON.stringify(newMemory));
   }
 
-  // Save current recommendations so they stay when user navigates away/back
   function saveLastResults(newIntro, newMovies, currentVibe) {
     localStorage.setItem(
       "flickpickLastResults",
@@ -54,27 +60,28 @@ export default function Home() {
     );
   }
 
-  // Love or Hard Pass a movie
-  function giveFeedback(movie, type) {
+  // Adds or updates a movie's status
+  function setMovieStatus(movie, status) {
     const isSameMovie = (m) => m.title === movie.title && m.year === movie.year;
 
-    const newPreferences = {
-      loved: preferences.loved.filter((m) => !isSameMovie(m)),
-      hardPass: preferences.hardPass.filter((m) => !isSameMovie(m)),
-    };
+    const existingMovie = memory.find((m) => isSameMovie(m));
 
-    if (type === "love") {
-      newPreferences.loved.push(movie);
+    let updatedMovie;
+
+    if (existingMovie) {
+      updatedMovie = { ...existingMovie, ...movie, status };
+    } else {
+      updatedMovie = { ...movie, status };
     }
 
-    if (type === "hardPass") {
-      newPreferences.hardPass.push(movie);
-    }
+    const newMemory = [
+      ...memory.filter((m) => !isSameMovie(m)),
+      updatedMovie,
+    ];
 
-    savePreferences(newPreferences);
+    saveMemory(newMemory);
   }
 
-  // Ask AI for movie recommendations
   async function pickMovie() {
     setLoading(true);
     setIntro("");
@@ -84,7 +91,7 @@ export default function Home() {
       const res = await fetch("/api/pick", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vibe, preferences }),
+        body: JSON.stringify({ vibe, memory }),
       });
 
       const data = await res.json();
@@ -187,20 +194,34 @@ export default function Home() {
                   padding: "24px",
                   background: "#fafafa",
                   boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
-                  minHeight: "280px",
+                  minHeight: "300px",
                 }}
               >
                 <h2 style={{ marginTop: 0, fontSize: "22px" }}>{movie.title}</h2>
+
                 <p style={{ color: "#666", marginTop: "-8px" }}>{movie.year}</p>
+
                 <p style={{ lineHeight: "1.6" }}>{movie.why}</p>
 
                 <div style={{ marginTop: "18px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                  <button onClick={() => giveFeedback(movie, "love")}>
-                    👍 Love this
+                  <button onClick={() => setMovieStatus(movie, "wantToWatch")}>
+                    🎯 Want to Watch
                   </button>
 
-                  <button onClick={() => giveFeedback(movie, "hardPass")}>
-                    👎 Hard pass
+                  <button onClick={() => setMovieStatus(movie, "notInterested")}>
+                    🚫 Not Interested
+                  </button>
+
+                  <button onClick={() => setMovieStatus(movie, "loved")}>
+                    ❤️ Loved
+                  </button>
+
+                  <button onClick={() => setMovieStatus(movie, "meh")}>
+                    😐 Meh
+                  </button>
+
+                  <button onClick={() => setMovieStatus(movie, "hardPass")}>
+                    ❌ Hard Pass
                   </button>
                 </div>
               </div>
