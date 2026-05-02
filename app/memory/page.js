@@ -3,84 +3,116 @@
 import { useEffect, useState } from "react";
 
 export default function MemoryPage() {
-  // Saved user movie memory
-  const [preferences, setPreferences] = useState({
-    loved: [],
-    hardPass: [],
-  });
+  const [memory, setMemory] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortAZ, setSortAZ] = useState(true);
 
-  // Load memory when page opens
+  const statuses = [
+    { key: "wantToWatch", label: "🎯 Want to Watch" },
+    { key: "notInterested", label: "🚫 Not Interested" },
+    { key: "hardPass", label: "❌ Hard Pass" },
+    { key: "meh", label: "😐 Meh" },
+    { key: "loved", label: "❤️ Loved" },
+  ];
+
   useEffect(() => {
-    const saved = localStorage.getItem("flickpickPreferences");
+    const savedMemory = localStorage.getItem("flickpickMemory");
+    const oldPreferences = localStorage.getItem("flickpickPreferences");
 
-    if (saved) {
-      setPreferences(JSON.parse(saved));
+    if (savedMemory) {
+      setMemory(JSON.parse(savedMemory));
+    }
+
+    if (!savedMemory && oldPreferences) {
+      const parsed = JSON.parse(oldPreferences);
+
+      const migratedMemory = [
+        ...(parsed.loved || []).map((movie) => ({ ...movie, status: "loved" })),
+        ...(parsed.hardPass || []).map((movie) => ({ ...movie, status: "hardPass" })),
+      ];
+
+      setMemory(migratedMemory);
+      localStorage.setItem("flickpickMemory", JSON.stringify(migratedMemory));
     }
   }, []);
 
-  // Save memory to browser
-  function savePreferences(newPreferences) {
-    setPreferences(newPreferences);
-    localStorage.setItem("flickpickPreferences", JSON.stringify(newPreferences));
+  function saveMemory(newMemory) {
+    setMemory(newMemory);
+    localStorage.setItem("flickpickMemory", JSON.stringify(newMemory));
   }
 
-  // Move a movie between Loved and Hard Pass
-  function giveFeedback(movie, type) {
+  function updateStatus(movie, newStatus) {
     const isSameMovie = (m) => m.title === movie.title && m.year === movie.year;
 
-    const newPreferences = {
-      loved: preferences.loved.filter((m) => !isSameMovie(m)),
-      hardPass: preferences.hardPass.filter((m) => !isSameMovie(m)),
-    };
+    const newMemory = memory.map((m) =>
+      isSameMovie(m) ? { ...m, status: newStatus } : m
+    );
 
-    if (type === "love") {
-      newPreferences.loved.push(movie);
-    }
-
-    if (type === "hardPass") {
-      newPreferences.hardPass.push(movie);
-    }
-
-    savePreferences(newPreferences);
+    saveMemory(newMemory);
   }
 
-  // Remove a movie from memory entirely
-  function clearRating(movie) {
+  function clearMovie(movie) {
     const isSameMovie = (m) => m.title === movie.title && m.year === movie.year;
 
-    const newPreferences = {
-      loved: preferences.loved.filter((m) => !isSameMovie(m)),
-      hardPass: preferences.hardPass.filter((m) => !isSameMovie(m)),
-    };
+    const newMemory = memory.filter((m) => !isSameMovie(m));
 
-    savePreferences(newPreferences);
+    saveMemory(newMemory);
   }
 
-  // Reusable movie row
-  function MovieMemoryItem({ movie, actionLabel, actionType }) {
+  function getFilteredAndSortedMovies(statusKey) {
+    return memory
+      .filter((movie) => movie.status === statusKey)
+      .filter((movie) =>
+        movie.title.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .sort((a, b) => {
+        if (sortAZ) {
+          return a.title.localeCompare(b.title);
+        }
+
+        return b.title.localeCompare(a.title);
+      });
+  }
+
+  function MovieMemoryCard({ movie }) {
     return (
       <div
         style={{
-          padding: "14px",
-          borderRadius: "14px",
+          padding: "16px",
+          borderRadius: "16px",
           background: "white",
           border: "1px solid #eee",
           marginBottom: "12px",
         }}
       >
-        <div style={{ fontWeight: "700", marginBottom: "10px" }}>
-          {movie.title} <span style={{ color: "#666", fontWeight: "400" }}>({movie.year})</span>
+        <div style={{ fontWeight: "700", marginBottom: "6px" }}>
+          {movie.title}
         </div>
 
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <button onClick={() => giveFeedback(movie, actionType)}>
-            {actionLabel}
-          </button>
-
-          <button onClick={() => clearRating(movie)}>
-            Clear
-          </button>
+        <div style={{ color: "#666", fontSize: "14px", marginBottom: "12px" }}>
+          {movie.year}
         </div>
+
+        <select
+          value={movie.status}
+          onChange={(e) => updateStatus(movie, e.target.value)}
+          style={{
+            padding: "8px",
+            borderRadius: "10px",
+            border: "1px solid #ddd",
+            marginRight: "10px",
+          }}
+        >
+          {statuses.map((status) => (
+            <option key={status.key} value={status.key}>
+              {status.label}
+            </option>
+          ))}
+        </select>
+
+        <button onClick={() => clearMovie(movie)}>
+          Clear
+        </button>
       </div>
     );
   }
@@ -96,7 +128,7 @@ export default function MemoryPage() {
     >
       <section
         style={{
-          maxWidth: "1000px",
+          maxWidth: "1100px",
           margin: "0 auto",
           background: "white",
           borderRadius: "24px",
@@ -106,65 +138,83 @@ export default function MemoryPage() {
       >
         <h1 style={{ fontSize: "38px", marginTop: 0 }}>FlickPick Memory</h1>
 
-        <p style={{ fontSize: "17px", lineHeight: "1.5", marginBottom: "30px" }}>
-          This is where FlickPick keeps track of your movie opinions, including the ones
-          that may need a sober second thought.
+        <p style={{ fontSize: "17px", lineHeight: "1.5", marginBottom: "28px" }}>
+          Search, sort, and update your movie memory here. This is where FlickPick
+          learns what you actually want to watch, what you might watch later, and what
+          should never darken your screen again.
         </p>
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "24px",
+            display: "flex",
+            gap: "12px",
+            flexWrap: "wrap",
+            marginBottom: "30px",
           }}
         >
-          <div
+          <input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by movie title..."
             style={{
-              padding: "24px",
-              borderRadius: "20px",
-              background: "#fafafa",
-              border: "1px solid #eee",
+              flex: "1",
+              minWidth: "240px",
+              padding: "12px",
+              borderRadius: "14px",
+              border: "1px solid #ddd",
+              fontSize: "15px",
+            }}
+          />
+
+          <button
+            onClick={() => setSortAZ(!sortAZ)}
+            style={{
+              padding: "12px 16px",
+              borderRadius: "999px",
+              border: "1px solid #ddd",
+              background: "#f5f0ff",
+              cursor: "pointer",
             }}
           >
-            <h2 style={{ marginTop: 0 }}>👍 Loved</h2>
+            Sort: {sortAZ ? "A to Z" : "Z to A"}
+          </button>
+        </div>
 
-            {preferences.loved.length === 0 ? (
-              <p>None yet</p>
-            ) : (
-              preferences.loved.map((movie, index) => (
-                <MovieMemoryItem
-                  key={`loved-${index}`}
-                  movie={movie}
-                  actionLabel="Move to Hard Pass"
-                  actionType="hardPass"
-                />
-              ))
-            )}
-          </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "22px",
+          }}
+        >
+          {statuses.map((status) => {
+            const moviesForStatus = getFilteredAndSortedMovies(status.key);
 
-          <div
-            style={{
-              padding: "24px",
-              borderRadius: "20px",
-              background: "#fafafa",
-              border: "1px solid #eee",
-            }}
-          >
-            <h2 style={{ marginTop: 0 }}>👎 Hard Pass</h2>
+            return (
+              <div
+                key={status.key}
+                style={{
+                  padding: "22px",
+                  borderRadius: "20px",
+                  background: "#fafafa",
+                  border: "1px solid #eee",
+                }}
+              >
+                <h2 style={{ marginTop: 0 }}>{status.label}</h2>
 
-            {preferences.hardPass.length === 0 ? (
-              <p>None yet</p>
-            ) : (
-              preferences.hardPass.map((movie, index) => (
-                <MovieMemoryItem
-                  key={`hardpass-${index}`}
-                  movie={movie}
-                  actionLabel="Move to Loved"
-                  actionType="love"
-                />
-              ))
-            )}
-          </div>
+                {moviesForStatus.length === 0 ? (
+                  <p style={{ color: "#777" }}>Nothing here yet.</p>
+                ) : (
+                  moviesForStatus.map((movie, index) => (
+                    <MovieMemoryCard
+                      key={`${status.key}-${movie.title}-${movie.year}-${index}`}
+                      movie={movie}
+                    />
+                  ))
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
     </main>
