@@ -1,47 +1,104 @@
 "use client";
+
+// Import React tools.
+// useEffect lets us load saved memory when the page opens.
+// useState lets the app remember things while the user is using it.
 import { useEffect, useState } from "react";
 
 export default function Home() {
+  // -----------------------------
+  // APP STATE
+  // -----------------------------
+
+  // What the user types into the movie mood box.
   const [vibe, setVibe] = useState("");
+
+  // The playful intro FlickPick returns before the movie cards.
   const [intro, setIntro] = useState("");
+
+  // The list of movie recommendations returned by the AI.
   const [movies, setMovies] = useState([]);
+
+  // Tracks whether FlickPick is currently waiting for an AI response.
   const [loading, setLoading] = useState(false);
+
+  // FlickPick's saved memory.
+  // For now, this lives in the user's browser using localStorage.
   const [preferences, setPreferences] = useState({
     loved: [],
     hardPass: [],
   });
 
+  // -----------------------------
+  // LOAD SAVED MEMORY
+  // -----------------------------
+
+  // When the page first opens, check the browser for saved FlickPick memory.
   useEffect(() => {
     const saved = localStorage.getItem("flickpickPreferences");
+
     if (saved) {
       setPreferences(JSON.parse(saved));
     }
   }, []);
 
+  // -----------------------------
+  // SAVE MEMORY
+  // -----------------------------
+
+  // Updates FlickPick memory in both the app and the browser.
   function savePreferences(newPreferences) {
     setPreferences(newPreferences);
     localStorage.setItem("flickpickPreferences", JSON.stringify(newPreferences));
   }
 
-function giveFeedback(movie, type) {
-  const isSameMovie = (m) => m.title === movie.title && m.year === movie.year;
+  // -----------------------------
+  // ADD OR CHANGE A MOVIE RATING
+  // -----------------------------
 
-  const newPreferences = {
-    loved: preferences.loved.filter((m) => !isSameMovie(m)),
-    hardPass: preferences.hardPass.filter((m) => !isSameMovie(m)),
-  };
+  // Handles when the user clicks "Love this" or "Hard pass."
+  // If the movie already exists in the opposite list, it removes it first.
+  function giveFeedback(movie, type) {
+    const isSameMovie = (m) => m.title === movie.title && m.year === movie.year;
 
-  if (type === "love") {
-    newPreferences.loved.push(movie);
+    const newPreferences = {
+      loved: preferences.loved.filter((m) => !isSameMovie(m)),
+      hardPass: preferences.hardPass.filter((m) => !isSameMovie(m)),
+    };
+
+    if (type === "love") {
+      newPreferences.loved.push(movie);
+    }
+
+    if (type === "hardPass") {
+      newPreferences.hardPass.push(movie);
+    }
+
+    savePreferences(newPreferences);
   }
 
-  if (type === "hardPass") {
-    newPreferences.hardPass.push(movie);
+  // -----------------------------
+  // CLEAR A MOVIE RATING
+  // -----------------------------
+
+  // Removes a movie from FlickPick memory entirely.
+  // This is Trouble's "sober second thought" button.
+  function clearRating(movie) {
+    const isSameMovie = (m) => m.title === movie.title && m.year === movie.year;
+
+    const newPreferences = {
+      loved: preferences.loved.filter((m) => !isSameMovie(m)),
+      hardPass: preferences.hardPass.filter((m) => !isSameMovie(m)),
+    };
+
+    savePreferences(newPreferences);
   }
 
-  savePreferences(newPreferences);
-}
+  // -----------------------------
+  // ASK AI FOR MOVIE PICKS
+  // -----------------------------
 
+  // Sends the user's vibe and saved preferences to the API route.
   async function pickMovie() {
     setLoading(true);
     setIntro("");
@@ -55,6 +112,7 @@ function giveFeedback(movie, type) {
       });
 
       const data = await res.json();
+
       setIntro(data.intro || "");
       setMovies(data.movies || []);
     } catch (error) {
@@ -63,6 +121,10 @@ function giveFeedback(movie, type) {
       setLoading(false);
     }
   }
+
+  // -----------------------------
+  // PAGE DESIGN
+  // -----------------------------
 
   return (
     <main
@@ -84,12 +146,18 @@ function giveFeedback(movie, type) {
           boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
         }}
       >
+        {/* Header */}
         <div style={{ fontSize: "48px" }}>🎬</div>
-        <h1 style={{ fontSize: "42px", margin: "0 0 10px" }}>FlickPick</h1>
+
+        <h1 style={{ fontSize: "42px", margin: "0 0 10px" }}>
+          FlickPick
+        </h1>
+
         <p style={{ fontSize: "18px", marginBottom: "28px" }}>
           Tell me your movie mood, and I’ll help pick something worth curling up for.
         </p>
 
+        {/* User input box */}
         <textarea
           value={vibe}
           onChange={(e) => setVibe(e.target.value)}
@@ -106,6 +174,7 @@ function giveFeedback(movie, type) {
           }}
         />
 
+        {/* Pick button */}
         <button
           onClick={pickMovie}
           disabled={loading || !vibe.trim()}
@@ -123,12 +192,14 @@ function giveFeedback(movie, type) {
           {loading ? "Consulting the popcorn gods..." : "✨ Pick My Flick"}
         </button>
 
+        {/* AI intro message */}
         {intro && (
           <p style={{ marginTop: "32px", fontSize: "18px", lineHeight: "1.5" }}>
             {intro}
           </p>
         )}
 
+        {/* Movie recommendation cards */}
         {movies.length > 0 && (
           <div
             style={{
@@ -150,14 +221,24 @@ function giveFeedback(movie, type) {
                   minHeight: "270px",
                 }}
               >
-                <h2 style={{ marginTop: 0, fontSize: "22px" }}>{movie.title}</h2>
-                <p style={{ color: "#666", marginTop: "-8px" }}>{movie.year}</p>
-                <p style={{ lineHeight: "1.6" }}>{movie.why}</p>
+                <h2 style={{ marginTop: 0, fontSize: "22px" }}>
+                  {movie.title}
+                </h2>
 
+                <p style={{ color: "#666", marginTop: "-8px" }}>
+                  {movie.year}
+                </p>
+
+                <p style={{ lineHeight: "1.6" }}>
+                  {movie.why}
+                </p>
+
+                {/* Feedback buttons for current recommendations */}
                 <div style={{ marginTop: "18px", display: "flex", gap: "10px" }}>
                   <button onClick={() => giveFeedback(movie, "love")}>
                     👍 Love this
                   </button>
+
                   <button onClick={() => giveFeedback(movie, "hardPass")}>
                     👎 Hard pass
                   </button>
@@ -167,11 +248,62 @@ function giveFeedback(movie, type) {
           </div>
         )}
 
+        {/* FlickPick memory editor */}
         {(preferences.loved.length > 0 || preferences.hardPass.length > 0) && (
-          <div style={{ marginTop: "34px", fontSize: "14px", color: "#555" }}>
-            <strong>FlickPick memory:</strong>
-            <p>Loved: {preferences.loved.map((m) => m.title).join(", ") || "None yet"}</p>
-            <p>Hard pass: {preferences.hardPass.map((m) => m.title).join(", ") || "None yet"}</p>
+          <div
+            style={{
+              marginTop: "34px",
+              padding: "24px",
+              borderRadius: "18px",
+              background: "#fafafa",
+              border: "1px solid #eee",
+              fontSize: "14px",
+              color: "#555",
+            }}
+          >
+            <h3 style={{ marginTop: 0 }}>FlickPick memory</h3>
+
+            {/* Loved list */}
+            <h4>Loved</h4>
+
+            {preferences.loved.length === 0 ? (
+              <p>None yet</p>
+            ) : (
+              preferences.loved.map((movie, index) => (
+                <div key={`loved-${index}`} style={{ marginBottom: "10px" }}>
+                  <strong>{movie.title}</strong> ({movie.year}){" "}
+
+                  <button onClick={() => giveFeedback(movie, "hardPass")}>
+                    Move to Hard pass
+                  </button>{" "}
+
+                  <button onClick={() => clearRating(movie)}>
+                    Clear
+                  </button>
+                </div>
+              ))
+            )}
+
+            {/* Hard pass list */}
+            <h4>Hard pass</h4>
+
+            {preferences.hardPass.length === 0 ? (
+              <p>None yet</p>
+            ) : (
+              preferences.hardPass.map((movie, index) => (
+                <div key={`hardpass-${index}`} style={{ marginBottom: "10px" }}>
+                  <strong>{movie.title}</strong> ({movie.year}){" "}
+
+                  <button onClick={() => giveFeedback(movie, "love")}>
+                    Move to Loved
+                  </button>{" "}
+
+                  <button onClick={() => clearRating(movie)}>
+                    Clear
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         )}
       </section>
