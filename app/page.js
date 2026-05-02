@@ -1,76 +1,68 @@
 "use client";
 
-// Import React tools
 import { useEffect, useState } from "react";
 
 export default function Home() {
-
-  // -----------------------------
-  // STATE VARIABLES
-  // -----------------------------
-
-  // What the user types
+  // User input
   const [vibe, setVibe] = useState("");
 
-  // AI intro message
+  // Current AI results
   const [intro, setIntro] = useState("");
-
-  // List of recommended movies
   const [movies, setMovies] = useState([]);
 
-  // Loading state (while waiting on AI)
+  // Loading state
   const [loading, setLoading] = useState(false);
 
-  // FlickPick memory stored in browser
+  // Saved user movie memory
   const [preferences, setPreferences] = useState({
     loved: [],
     hardPass: [],
   });
 
-  // -----------------------------
-  // LOAD SAVED MEMORY
-  // -----------------------------
-
-  // When the page loads, pull memory from localStorage
+  // Load saved memory and last recommendations when page opens
   useEffect(() => {
-    const saved = localStorage.getItem("flickpickPreferences");
+    const savedPreferences = localStorage.getItem("flickpickPreferences");
+    const savedResults = localStorage.getItem("flickpickLastResults");
 
-    if (saved) {
-      setPreferences(JSON.parse(saved));
+    if (savedPreferences) {
+      setPreferences(JSON.parse(savedPreferences));
+    }
+
+    if (savedResults) {
+      const parsedResults = JSON.parse(savedResults);
+      setIntro(parsedResults.intro || "");
+      setMovies(parsedResults.movies || []);
+      setVibe(parsedResults.vibe || "");
     }
   }, []);
 
-  // -----------------------------
-  // SAVE MEMORY
-  // -----------------------------
-
+  // Save memory to browser
   function savePreferences(newPreferences) {
     setPreferences(newPreferences);
+    localStorage.setItem("flickpickPreferences", JSON.stringify(newPreferences));
+  }
 
-    // Save to browser so it persists between sessions
+  // Save current recommendations so they stay when user navigates away/back
+  function saveLastResults(newIntro, newMovies, currentVibe) {
     localStorage.setItem(
-      "flickpickPreferences",
-      JSON.stringify(newPreferences)
+      "flickpickLastResults",
+      JSON.stringify({
+        intro: newIntro,
+        movies: newMovies,
+        vibe: currentVibe,
+      })
     );
   }
 
-  // -----------------------------
-  // HANDLE FEEDBACK BUTTONS
-  // -----------------------------
-
+  // Love or Hard Pass a movie
   function giveFeedback(movie, type) {
+    const isSameMovie = (m) => m.title === movie.title && m.year === movie.year;
 
-    // Helper to identify same movie
-    const isSameMovie = (m) =>
-      m.title === movie.title && m.year === movie.year;
-
-    // Remove movie from both lists first (prevents duplicates)
     const newPreferences = {
       loved: preferences.loved.filter((m) => !isSameMovie(m)),
       hardPass: preferences.hardPass.filter((m) => !isSameMovie(m)),
     };
 
-    // Add movie to correct list
     if (type === "love") {
       newPreferences.loved.push(movie);
     }
@@ -82,10 +74,7 @@ export default function Home() {
     savePreferences(newPreferences);
   }
 
-  // -----------------------------
-  // CALL THE AI
-  // -----------------------------
-
+  // Ask AI for movie recommendations
   async function pickMovie() {
     setLoading(true);
     setIntro("");
@@ -94,29 +83,24 @@ export default function Home() {
     try {
       const res = await fetch("/api/pick", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Send vibe + preferences to backend
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vibe, preferences }),
       });
 
       const data = await res.json();
 
-      setIntro(data.intro || "");
-      setMovies(data.movies || []);
+      const newIntro = data.intro || "";
+      const newMovies = data.movies || [];
+
+      setIntro(newIntro);
+      setMovies(newMovies);
+      saveLastResults(newIntro, newMovies, vibe);
     } catch (error) {
-      setIntro(
-        "Something went sideways. FlickPick tripped over the popcorn bucket."
-      );
+      setIntro("Something went sideways. FlickPick tripped over the popcorn bucket.");
     } finally {
       setLoading(false);
     }
   }
-
-  // -----------------------------
-  // UI RENDER
-  // -----------------------------
 
   return (
     <main
@@ -124,6 +108,7 @@ export default function Home() {
         minHeight: "100vh",
         padding: "60px 24px",
         background: "linear-gradient(135deg, #f5f0ff, #faf7ff)",
+        color: "#222",
       }}
     >
       <section
@@ -133,46 +118,95 @@ export default function Home() {
           background: "white",
           borderRadius: "24px",
           padding: "40px",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
         }}
       >
-
-        {/* HEADER */}
         <div style={{ fontSize: "48px" }}>🎬</div>
-        <h1>FlickPick</h1>
 
-        {/* USER INPUT */}
+        <h1 style={{ fontSize: "42px", margin: "0 0 10px" }}>FlickPick</h1>
+
+        <p style={{ fontSize: "18px", marginBottom: "28px", lineHeight: "1.5" }}>
+          Tell me your movie mood, and I’ll help pick something worth curling up for.
+        </p>
+
         <textarea
           value={vibe}
           onChange={(e) => setVibe(e.target.value)}
-          placeholder="Describe your vibe..."
+          placeholder="Cozy, romantic, funny... maybe something with banter, but no emotional devastation tonight."
           rows={4}
-          style={{ width: "100%", padding: "12px" }}
+          style={{
+            width: "100%",
+            padding: "16px",
+            fontSize: "16px",
+            borderRadius: "16px",
+            border: "1px solid #ddd",
+            resize: "vertical",
+            boxSizing: "border-box",
+          }}
         />
 
-        {/* BUTTON */}
-        <button onClick={pickMovie}>
-          {loading ? "Thinking..." : "✨ Pick My Flick"}
+        <button
+          onClick={pickMovie}
+          disabled={loading || !vibe.trim()}
+          style={{
+            marginTop: "18px",
+            padding: "14px 24px",
+            fontSize: "16px",
+            borderRadius: "999px",
+            border: "none",
+            cursor: loading || !vibe.trim() ? "not-allowed" : "pointer",
+            background: loading || !vibe.trim() ? "#ddd" : "#111827",
+            color: "white",
+            boxShadow: loading || !vibe.trim() ? "none" : "0 8px 18px rgba(0,0,0,0.15)",
+          }}
+        >
+          {loading ? "Consulting the popcorn gods..." : "✨ Pick My Flick"}
         </button>
 
-        {/* AI INTRO */}
-        {intro && <p>{intro}</p>}
+        {intro && (
+          <p style={{ marginTop: "32px", fontSize: "18px", lineHeight: "1.5" }}>
+            {intro}
+          </p>
+        )}
 
-        {/* MOVIE CARDS */}
-        {movies.map((movie, index) => (
-          <div key={index}>
-            <h2>{movie.title}</h2>
-            <p>{movie.year}</p>
-            <p>{movie.why}</p>
+        {movies.length > 0 && (
+          <div
+            style={{
+              marginTop: "24px",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "20px",
+            }}
+          >
+            {movies.map((movie, index) => (
+              <div
+                key={index}
+                style={{
+                  border: "1px solid #eee",
+                  borderRadius: "22px",
+                  padding: "24px",
+                  background: "#fafafa",
+                  boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
+                  minHeight: "280px",
+                }}
+              >
+                <h2 style={{ marginTop: 0, fontSize: "22px" }}>{movie.title}</h2>
+                <p style={{ color: "#666", marginTop: "-8px" }}>{movie.year}</p>
+                <p style={{ lineHeight: "1.6" }}>{movie.why}</p>
 
-            <button onClick={() => giveFeedback(movie, "love")}>
-              👍 Love
-            </button>
+                <div style={{ marginTop: "18px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  <button onClick={() => giveFeedback(movie, "love")}>
+                    👍 Love this
+                  </button>
 
-            <button onClick={() => giveFeedback(movie, "hardPass")}>
-              👎 Pass
-            </button>
+                  <button onClick={() => giveFeedback(movie, "hardPass")}>
+                    👎 Hard pass
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </section>
     </main>
   );
