@@ -1,15 +1,29 @@
-import Link from "next/link";
+"use client";
 
-export const metadata = {
-  title: "FlickPick",
-  description: "A playful movie picker app",
-};
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function RootLayout({ children }) {
+  const pathname = usePathname(); // tells us current page URL
+
+  function navStyle(path) {
+    const isActive = pathname === path;
+
+    return {
+      textDecoration: "none",
+      fontWeight: "600",
+      padding: "8px 14px",
+      borderRadius: "999px",
+      transition: "all 0.2s ease",
+      color: isActive ? "white" : "#5b21b6",
+      background: isActive ? "#5b21b6" : "#f5f0ff",
+    };
+  }
+
   return (
     <html lang="en">
       <body style={{ margin: 0, fontFamily: "Arial, sans-serif" }}>
-        {/* Main app navigation */}
+        {/* Navigation bar */}
         <nav
           style={{
             background: "#ffffff",
@@ -29,29 +43,11 @@ export default function RootLayout({ children }) {
               gap: "18px",
             }}
           >
-            <Link
-              href="/"
-              style={{
-                textDecoration: "none",
-                color: "#111827",
-                fontWeight: "700",
-                fontSize: "18px",
-              }}
-            >
+            <Link href="/" style={navStyle("/")}>
               🎬 FlickPick
             </Link>
 
-            <Link
-              href="/memory"
-              style={{
-                textDecoration: "none",
-                color: "#5b21b6",
-                fontWeight: "600",
-                padding: "8px 12px",
-                borderRadius: "999px",
-                background: "#f5f0ff",
-              }}
-            >
+            <Link href="/memory" style={navStyle("/memory")}>
               Memory
             </Link>
           </div>
