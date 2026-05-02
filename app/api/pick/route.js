@@ -9,11 +9,12 @@ export async function POST(req) {
     },
     body: JSON.stringify({
       model: "gpt-4o-mini",
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
           content:
-            "You are FlickPick, a cozy, witty movie recommendation assistant. Suggest 3 movies based on the user's vibe. Keep tone warm, slightly playful, and conversational. Include a short explanation for each.",
+            "You are FlickPick, a cozy, witty movie recommendation assistant. Return ONLY valid JSON with this exact shape: { \"intro\": \"short playful intro\", \"movies\": [ { \"title\": \"Movie Title\", \"year\": \"Year\", \"why\": \"Short warm explanation of why this fits the user's vibe\" } ] }. Recommend exactly 3 movies.",
         },
         {
           role: "user",
@@ -24,8 +25,7 @@ export async function POST(req) {
   });
 
   const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
 
-  return Response.json({
-    result: data.choices[0].message.content,
-  });
+  return Response.json(JSON.parse(content));
 }
