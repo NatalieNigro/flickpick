@@ -23,21 +23,24 @@ export default function Home() {
     localStorage.setItem("flickpickPreferences", JSON.stringify(newPreferences));
   }
 
-  function giveFeedback(movie, type) {
-    const newPreferences = {
-      ...preferences,
-      loved:
-        type === "love"
-          ? [...preferences.loved, movie]
-          : preferences.loved,
-      hardPass:
-        type === "hardPass"
-          ? [...preferences.hardPass, movie]
-          : preferences.hardPass,
-    };
+function giveFeedback(movie, type) {
+  const isSameMovie = (m) => m.title === movie.title && m.year === movie.year;
 
-    savePreferences(newPreferences);
+  const newPreferences = {
+    loved: preferences.loved.filter((m) => !isSameMovie(m)),
+    hardPass: preferences.hardPass.filter((m) => !isSameMovie(m)),
+  };
+
+  if (type === "love") {
+    newPreferences.loved.push(movie);
   }
+
+  if (type === "hardPass") {
+    newPreferences.hardPass.push(movie);
+  }
+
+  savePreferences(newPreferences);
+}
 
   async function pickMovie() {
     setLoading(true);
