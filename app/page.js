@@ -67,7 +67,7 @@ export default function Home() {
         minHeight: "100vh",
         padding: "60px 24px",
         fontFamily: "Arial, sans-serif",
-        background: "linear-gradient(135deg, #fff7ed, #fdf2f8)",
+        background: "linear-gradient(135deg, #f5f0ff, #faf7ff)",
         color: "#222",
       }}
     >
