@@ -3,26 +3,27 @@ import { useState } from "react";
 
 export default function Home() {
   const [vibe, setVibe] = useState("");
-  const [result, setResult] = useState("");
+  const [intro, setIntro] = useState("");
+  const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(false);
 
   async function pickMovie() {
     setLoading(true);
-    setResult("");
+    setIntro("");
+    setMovies([]);
 
     try {
       const res = await fetch("/api/pick", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vibe }),
       });
 
       const data = await res.json();
-      setResult(data.result || "Hmm... FlickPick got confused. Try again.");
+      setIntro(data.intro || "");
+      setMovies(data.movies || []);
     } catch (error) {
-      setResult("Something went sideways. FlickPick tripped over the popcorn bucket.");
+      setIntro("Something went sideways. FlickPick tripped over the popcorn bucket.");
     } finally {
       setLoading(false);
     }
@@ -40,7 +41,7 @@ export default function Home() {
     >
       <section
         style={{
-          maxWidth: "760px",
+          maxWidth: "1000px",
           margin: "0 auto",
           background: "white",
           borderRadius: "24px",
@@ -48,11 +49,9 @@ export default function Home() {
           boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
         }}
       >
-        <div style={{ fontSize: "48px", marginBottom: "10px" }}>🎬</div>
-
+        <div style={{ fontSize: "48px" }}>🎬</div>
         <h1 style={{ fontSize: "42px", margin: "0 0 10px" }}>FlickPick</h1>
-
-        <p style={{ fontSize: "18px", lineHeight: "1.5", marginBottom: "28px" }}>
+        <p style={{ fontSize: "18px", marginBottom: "28px" }}>
           Tell me your movie mood, and I’ll help pick something worth curling up for.
         </p>
 
@@ -89,20 +88,42 @@ export default function Home() {
           {loading ? "Consulting the popcorn gods..." : "✨ Pick My Flick"}
         </button>
 
-        {result && (
+        {intro && (
+          <p style={{ marginTop: "32px", fontSize: "18px", lineHeight: "1.5" }}>
+            {intro}
+          </p>
+        )}
+
+        {movies.length > 0 && (
           <div
             style={{
-              marginTop: "34px",
-              padding: "24px",
-              borderRadius: "18px",
-              background: "#fafafa",
-              border: "1px solid #eee",
-              whiteSpace: "pre-wrap",
-              lineHeight: "1.6",
-              fontSize: "16px",
+              marginTop: "24px",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "20px",
             }}
           >
-            {result}
+            {movies.map((movie, index) => (
+              <div
+                key={index}
+                style={{
+                  border: "1px solid #eee",
+                  borderRadius: "22px",
+                  padding: "24px",
+                  background: "#fafafa",
+                  boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
+                  minHeight: "240px",
+                }}
+              >
+                <h2 style={{ marginTop: 0, fontSize: "22px" }}>
+                  {movie.title}
+                </h2>
+                <p style={{ color: "#666", marginTop: "-8px" }}>
+                  {movie.year}
+                </p>
+                <p style={{ lineHeight: "1.6" }}>{movie.why}</p>
+              </div>
+            ))}
           </div>
         )}
       </section>
