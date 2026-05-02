@@ -1,11 +1,43 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [vibe, setVibe] = useState("");
   const [intro, setIntro] = useState("");
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [preferences, setPreferences] = useState({
+    loved: [],
+    hardPass: [],
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem("flickpickPreferences");
+    if (saved) {
+      setPreferences(JSON.parse(saved));
+    }
+  }, []);
+
+  function savePreferences(newPreferences) {
+    setPreferences(newPreferences);
+    localStorage.setItem("flickpickPreferences", JSON.stringify(newPreferences));
+  }
+
+  function giveFeedback(movie, type) {
+    const newPreferences = {
+      ...preferences,
+      loved:
+        type === "love"
+          ? [...preferences.loved, movie]
+          : preferences.loved,
+      hardPass:
+        type === "hardPass"
+          ? [...preferences.hardPass, movie]
+          : preferences.hardPass,
+    };
+
+    savePreferences(newPreferences);
+  }
 
   async function pickMovie() {
     setLoading(true);
@@ -16,7 +48,7 @@ export default function Home() {
       const res = await fetch("/api/pick", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vibe }),
+        body: JSON.stringify({ vibe, preferences }),
       });
 
       const data = await res.json();
@@ -112,18 +144,31 @@ export default function Home() {
                   padding: "24px",
                   background: "#fafafa",
                   boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
-                  minHeight: "240px",
+                  minHeight: "270px",
                 }}
               >
-                <h2 style={{ marginTop: 0, fontSize: "22px" }}>
-                  {movie.title}
-                </h2>
-                <p style={{ color: "#666", marginTop: "-8px" }}>
-                  {movie.year}
-                </p>
+                <h2 style={{ marginTop: 0, fontSize: "22px" }}>{movie.title}</h2>
+                <p style={{ color: "#666", marginTop: "-8px" }}>{movie.year}</p>
                 <p style={{ lineHeight: "1.6" }}>{movie.why}</p>
+
+                <div style={{ marginTop: "18px", display: "flex", gap: "10px" }}>
+                  <button onClick={() => giveFeedback(movie, "love")}>
+                    👍 Love this
+                  </button>
+                  <button onClick={() => giveFeedback(movie, "hardPass")}>
+                    👎 Hard pass
+                  </button>
+                </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {(preferences.loved.length > 0 || preferences.hardPass.length > 0) && (
+          <div style={{ marginTop: "34px", fontSize: "14px", color: "#555" }}>
+            <strong>FlickPick memory:</strong>
+            <p>Loved: {preferences.loved.map((m) => m.title).join(", ") || "None yet"}</p>
+            <p>Hard pass: {preferences.hardPass.map((m) => m.title).join(", ") || "None yet"}</p>
           </div>
         )}
       </section>
