@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import MovieCard from "./components/MovieCard";
+import MovieGrid from "./components/MovieGrid";
 
 export default function Home() {
   const [vibe, setVibe] = useState("");
@@ -159,25 +159,11 @@ export default function Home() {
           </p>
         )}
 
-        {movies.length > 0 && (
-          <div
-            style={{
-              marginTop: "24px",
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-              gap: "22px",
-            }}
-          >
-            {movies.map((movie, index) => (
-              <MovieCard
-                key={`${movie.title}-${movie.year}-${index}`}
-                movie={movie}
-                memory={memory}
-                setMovieStatus={setMovieStatus}
-              />
-            ))}
-          </div>
-        )}
+        <MovieGrid
+            movies={movies}
+            memory={memory}
+            setMovieStatus={setMovieStatus}
+          />
       </section>
     </main>
   );
