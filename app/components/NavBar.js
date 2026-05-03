@@ -44,7 +44,7 @@ export default function NavBar() {
           🎬 FlickPick
         </Link>
 
-        <Link href="/memory" style={navStyle("/vault")}>
+        <Link href="/vault" style={navStyle("/vault")}>
           The Vault
         </Link>
 
