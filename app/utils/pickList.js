@@ -54,3 +54,9 @@ export function isInPickList(movie) {
     (m) => m.title === movie.title && m.year === movie.year
   );
 }
+
+// Saves the Pick List in its current order.
+// This is used after the user drags movies around and rearranges them.
+export function savePickListOrder(newPickListOrder) {
+  localStorage.setItem(PICK_LIST_KEY, JSON.stringify(newPickListOrder));
+}
