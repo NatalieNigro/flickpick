@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import MovieGrid from "./components/MovieGrid";
+import {
+  getMemory,
+  saveMemory,
+  getLastResults,
+  saveLastResults,
+} from "./utils/memory";
 
 export default function Home() {
   const [vibe, setVibe] = useState("");
@@ -11,33 +17,22 @@ export default function Home() {
   const [memory, setMemory] = useState([]);
 
   useEffect(() => {
-    const savedMemory = localStorage.getItem("flickpickMemory");
-    const savedResults = localStorage.getItem("flickpickLastResults");
+    const savedMemory = getMemory();
+    const savedResults = getLastResults();
 
-    if (savedMemory) setMemory(JSON.parse(savedMemory));
+    setMemory(savedMemory);
 
     if (savedResults) {
-      const parsedResults = JSON.parse(savedResults);
-      setIntro(parsedResults.intro || "");
-      setMovies(parsedResults.movies || []);
-      setVibe(parsedResults.vibe || "");
+      setIntro(savedResults.intro || "");
+      setMovies(savedResults.movies || []);
+      setVibe(savedResults.vibe || "");
     }
   }, []);
 
-  function saveMemory(newMemory) {
+  // This updates BOTH React state and browser storage
+  function updateMemory(newMemory) {
     setMemory(newMemory);
-    localStorage.setItem("flickpickMemory", JSON.stringify(newMemory));
-  }
-
-  function saveLastResults(newIntro, newMovies, currentVibe) {
-    localStorage.setItem(
-      "flickpickLastResults",
-      JSON.stringify({
-        intro: newIntro,
-        movies: newMovies,
-        vibe: currentVibe,
-      })
-    );
+    saveMemory(newMemory);
   }
 
   function setMovieStatus(movie, status) {
@@ -55,7 +50,7 @@ export default function Home() {
       updatedMovie,
     ];
 
-    saveMemory(newMemory);
+    updateMemory(newMemory);
   }
 
   async function pickMovie() {
@@ -160,10 +155,10 @@ export default function Home() {
         )}
 
         <MovieGrid
-            movies={movies}
-            memory={memory}
-            setMovieStatus={setMovieStatus}
-          />
+          movies={movies}
+          memory={memory}
+          setMovieStatus={setMovieStatus}
+        />
       </section>
     </main>
   );
