@@ -71,7 +71,7 @@ export default function Home() {
       />
 
       <button onClick={pickMovie}>
-        {loading ? "Thinking..." : "Pick My Flick"}
+        {loading ? "Thinking... 🍿" : "Pick My Flick"}
       </button>
 
       {/* AI intro */}
