@@ -22,6 +22,13 @@ export async function POST(request) {
     const searchResponse = await fetch(searchUrl);
     const searchData = await searchResponse.json();
 
+    // TEMPORARY DEBUGGING:
+    // Stop here and show us exactly what Watchmode sent back
+    return Response.json({
+      searchedFor: `${title} ${year || ""}`,
+      searchData,
+    });
+
     const titleResults = searchData.title_results || [];
     
     const bestMatch =
