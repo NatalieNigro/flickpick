@@ -4,90 +4,181 @@ import { useEffect, useState } from "react";
 import MovieCard from "./components/MovieCard";
 
 export default function Home() {
-  // What the user types
   const [vibe, setVibe] = useState("");
-
-  // AI intro text
   const [intro, setIntro] = useState("");
-
-  // Movies returned from AI
   const [movies, setMovies] = useState([]);
-
-  // Loading state (while AI is thinking)
   const [loading, setLoading] = useState(false);
-
-  // Stored user preferences (memory)
   const [memory, setMemory] = useState([]);
 
-  // When the page loads, grab saved data from browser
   useEffect(() => {
     const savedMemory = localStorage.getItem("flickpickMemory");
+    const savedResults = localStorage.getItem("flickpickLastResults");
 
-    if (savedMemory) {
-      setMemory(JSON.parse(savedMemory));
+    if (savedMemory) setMemory(JSON.parse(savedMemory));
+
+    if (savedResults) {
+      const parsedResults = JSON.parse(savedResults);
+      setIntro(parsedResults.intro || "");
+      setMovies(parsedResults.movies || []);
+      setVibe(parsedResults.vibe || "");
     }
   }, []);
 
-  // Save updated memory
   function saveMemory(newMemory) {
     setMemory(newMemory);
     localStorage.setItem("flickpickMemory", JSON.stringify(newMemory));
   }
 
-  // Update a movie’s status (Want to Watch, Loved, etc.)
-  function setMovieStatus(movie, status) {
-    const updated = [...memory.filter(
-      (m) => !(m.title === movie.title && m.year === movie.year)
-    ), { ...movie, status }];
-
-    saveMemory(updated);
+  function saveLastResults(newIntro, newMovies, currentVibe) {
+    localStorage.setItem(
+      "flickpickLastResults",
+      JSON.stringify({
+        intro: newIntro,
+        movies: newMovies,
+        vibe: currentVibe,
+      })
+    );
   }
 
-  // Call your backend to get recommendations
+  function setMovieStatus(movie, status) {
+    const isSameMovie = (m) =>
+      m.title === movie.title && m.year === movie.year;
+
+    const existingMovie = memory.find((m) => isSameMovie(m));
+
+    const updatedMovie = existingMovie
+      ? { ...existingMovie, ...movie, status }
+      : { ...movie, status };
+
+    const newMemory = [
+      ...memory.filter((m) => !isSameMovie(m)),
+      updatedMovie,
+    ];
+
+    saveMemory(newMemory);
+  }
+
   async function pickMovie() {
     setLoading(true);
+    setIntro("");
+    setMovies([]);
 
-    const res = await fetch("/api/pick", {
-      method: "POST",
-      body: JSON.stringify({ vibe, memory }),
-    });
+    try {
+      const res = await fetch("/api/pick", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ vibe, memory }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setIntro(data.intro);
-    setMovies(data.movies);
+      const newIntro = data.intro || "";
+      const newMovies = data.movies || [];
 
-    setLoading(false);
+      setIntro(newIntro);
+      setMovies(newMovies);
+      saveLastResults(newIntro, newMovies, vibe);
+    } catch (error) {
+      setIntro("Something went sideways. FlickPick tripped over the popcorn bucket.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <main>
-      <h1>FlickPick</h1>
+    <main
+      style={{
+        minHeight: "100vh",
+        padding: "60px 24px",
+        background: "linear-gradient(135deg, #f5f0ff, #faf7ff)",
+        color: "#222",
+      }}
+    >
+      <section
+        style={{
+          maxWidth: "1100px",
+          margin: "0 auto",
+          background: "white",
+          borderRadius: "24px",
+          padding: "40px",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
+        }}
+      >
+        <div style={{ fontSize: "48px" }}>🎬</div>
 
-      {/* User types their vibe */}
-      <textarea
-        value={vibe}
-        onChange={(e) => setVibe(e.target.value)}
-      />
+        <h1 style={{ fontSize: "42px", margin: "0 0 10px" }}>
+          FlickPick
+        </h1>
 
-      <button onClick={pickMovie}>
-        {loading ? "Thinking... 🍿" : "Pick My Flick"}
-      </button>
+        <p style={{ fontSize: "18px", marginBottom: "28px", lineHeight: "1.5" }}>
+          Tell me your movie mood, and I’ll help pick something worth curling up for.
+        </p>
 
-      {/* AI intro */}
-      <p>{intro}</p>
+        <textarea
+          value={vibe}
+          onChange={(e) => setVibe(e.target.value)}
+          placeholder="Cozy, romantic, funny... maybe something with banter, but no emotional devastation tonight."
+          rows={4}
+          style={{
+            width: "100%",
+            padding: "16px",
+            fontSize: "16px",
+            borderRadius: "16px",
+            border: "1px solid #ddd",
+            resize: "vertical",
+            boxSizing: "border-box",
+          }}
+        />
 
-      {/* Movie list */}
-      <div>
-        {movies.map((movie, index) => (
-          <MovieCard
-            key={index}
-            movie={movie}
-            memory={memory}
-            setMovieStatus={setMovieStatus}
-          />
-        ))}
-      </div>
+        <button
+          onClick={pickMovie}
+          disabled={loading || !vibe.trim()}
+          style={{
+            marginTop: "18px",
+            padding: "14px 24px",
+            fontSize: "16px",
+            borderRadius: "999px",
+            border: "none",
+            cursor: loading || !vibe.trim() ? "not-allowed" : "pointer",
+            background: loading || !vibe.trim() ? "#ddd" : "#111827",
+            color: "white",
+            boxShadow:
+              loading || !vibe.trim()
+                ? "none"
+                : "0 8px 18px rgba(0,0,0,0.15)",
+          }}
+        >
+          {loading ? "Consulting the popcorn gods..." : "✨ Pick My Flick"}
+        </button>
+
+        {intro && (
+          <p style={{ marginTop: "32px", fontSize: "18px", lineHeight: "1.5" }}>
+            {intro}
+          </p>
+        )}
+
+        {movies.length > 0 && (
+          <div
+            style={{
+              marginTop: "24px",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: "22px",
+            }}
+          >
+            {movies.map((movie, index) => (
+              <MovieCard
+                key={`${movie.title}-${movie.year}-${index}`}
+                movie={movie}
+                memory={memory}
+                setMovieStatus={setMovieStatus}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </main>
   );
 }
