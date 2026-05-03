@@ -6,15 +6,8 @@
 
 import { saveToPickList } from "../utils/pickList";
 
-// This component displays one movie card
-export default function MovieCard({
-  movie,
-  memory,
-  setMovieStatus,
-}) {
-  // This function controls how the status buttons look
+export default function MovieCard({ movie, memory, setMovieStatus }) {
   function getButtonStyle(status) {
-    // Check if this movie already has this status
     const isSelected =
       memory.find(
         (m) => m.title === movie.title && m.year === movie.year
@@ -37,53 +30,126 @@ export default function MovieCard({
         borderRadius: "22px",
         overflow: "hidden",
         background: "#fafafa",
+        boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
       }}
     >
-      {/* Movie Poster */}
       {movie.poster ? (
-        <img src={movie.poster} alt={movie.title} />
+        <img
+          src={movie.poster}
+          alt={`${movie.title} poster`}
+          style={{
+            width: "100%",
+            height: "390px",
+            objectFit: "cover",
+            display: "block",
+            background: "#eee",
+          }}
+        />
       ) : (
-        <div>Poster unavailable</div>
+        <div
+          style={{
+            height: "390px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#eee",
+            color: "#777",
+            padding: "20px",
+            textAlign: "center",
+          }}
+        >
+          Poster unavailable
+        </div>
       )}
 
-      <div style={{ padding: "20px" }}>
-        <h2>{movie.title}</h2>
-        <p>{movie.year}</p>
+      <div style={{ padding: "24px" }}>
+        <h2 style={{ marginTop: 0, fontSize: "22px" }}>
+          {movie.title}
+        </h2>
 
-        {/* Basic movie info */}
-        <p><strong>Genre:</strong> {movie.genre}</p>
-        <p><strong>Actors:</strong> {movie.actors}</p>
+        <p style={{ color: "#666", marginTop: "-8px" }}>
+          {movie.year}
+        </p>
 
-        {/* AI explanation */}
-        <p>{movie.why}</p>
+        <p style={{ fontSize: "14px", lineHeight: "1.5", color: "#444" }}>
+          <strong>Genre:</strong> {movie.genre}
+        </p>
 
-        {/* Plot */}
-        <p><strong>Plot:</strong> {movie.plot}</p>
+        <p style={{ fontSize: "14px", lineHeight: "1.5", color: "#444" }}>
+          <strong>Actors:</strong> {movie.actors}
+        </p>
 
-        {/* 🎯 Add to Pick List button */}
-        <button onClick={() => saveToPickList(movie)}>
+        {movie.imdbRating && movie.imdbRating !== "N/A" && (
+          <p style={{ fontSize: "14px", lineHeight: "1.5", color: "#444" }}>
+            <strong>IMDb:</strong> {movie.imdbRating}
+          </p>
+        )}
+
+        <p style={{ lineHeight: "1.6" }}>
+          {movie.why}
+        </p>
+
+        {movie.plot && (
+          <p style={{ fontSize: "14px", lineHeight: "1.5", color: "#666" }}>
+            <strong>Plot:</strong> {movie.plot}
+          </p>
+        )}
+
+        <button
+          onClick={() => saveToPickList(movie)}
+          style={{
+            marginTop: "10px",
+            padding: "8px 12px",
+            borderRadius: "999px",
+            border: "1px solid #ddd",
+            background: "#ffffff",
+            fontWeight: "600",
+            cursor: "pointer",
+          }}
+        >
           ➕ Add to Pick List
         </button>
 
-        {/* Status buttons (this is your “memory system”) */}
-        <div style={{ marginTop: "12px" }}>
-          <button onClick={() => setMovieStatus(movie, "wantToWatch")} style={getButtonStyle("wantToWatch")}>
+        <div
+          style={{
+            marginTop: "18px",
+            display: "flex",
+            gap: "10px",
+            flexWrap: "wrap",
+          }}
+        >
+          <button
+            style={getButtonStyle("wantToWatch")}
+            onClick={() => setMovieStatus(movie, "wantToWatch")}
+          >
             🎯 Want to Watch
           </button>
 
-          <button onClick={() => setMovieStatus(movie, "notInterested")} style={getButtonStyle("notInterested")}>
+          <button
+            style={getButtonStyle("notInterested")}
+            onClick={() => setMovieStatus(movie, "notInterested")}
+          >
             🚫 Not Interested
           </button>
 
-          <button onClick={() => setMovieStatus(movie, "loved")} style={getButtonStyle("loved")}>
+          <button
+            style={getButtonStyle("loved")}
+            onClick={() => setMovieStatus(movie, "loved")}
+          >
             ❤️ Loved
           </button>
 
-          <button onClick={() => setMovieStatus(movie, "meh")} style={getButtonStyle("meh")}>
+          <button
+            style={getButtonStyle("meh")}
+            onClick={() => setMovieStatus(movie, "meh")}
+          >
             😐 Meh
           </button>
 
-          <button onClick={() => setMovieStatus(movie, "hardPass")} style={getButtonStyle("hardPass")}>
+          <button
+            style={getButtonStyle("hardPass")}
+            onClick={() => setMovieStatus(movie, "hardPass")}
+          >
             ❌ Hard Pass
           </button>
         </div>
