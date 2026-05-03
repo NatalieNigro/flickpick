@@ -41,6 +41,8 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
         overflow: "hidden",
         background: "#fafafa",
         boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {movie.poster ? (
@@ -72,7 +74,14 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
         </div>
       )}
 
-      <div style={{ padding: "24px" }}>
+      <div
+          style={{
+            padding: "24px",
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+          }}
+        >
         <h2 style={{ marginTop: 0, fontSize: "22px" }}>
           {movie.title}
         </h2>
@@ -105,32 +114,37 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
           </p>
         )}
 
-        <button
-          onClick={() => {
-            saveToPickList(movie);
-            setAdded(true);
-          }}
-          style={{
-            marginTop: "10px",
-            padding: "8px 12px",
-            borderRadius: "999px",
-            border: added ? "1px solid #5b21b6" : "1px solid #ddd",
-            background: added ? "#ede9fe" : "#ffffff",
-            fontWeight: "600",
-            cursor: "pointer",
-          }}
-        >
-          {added ? "✓ Added" : "➕ Add to Pick List"}
-        </button>
-
         <div
-          style={{
-            marginTop: "18px",
-            display: "flex",
-            gap: "10px",
-            flexWrap: "wrap",
-          }}
-        >
+            style={{
+              marginTop: "auto",
+              paddingTop: "18px",
+            }}
+          >
+            <button
+              onClick={() => {
+                saveToPickList(movie);
+                setAdded(true);
+              }}
+              style={{
+                padding: "8px 12px",
+                borderRadius: "999px",
+                border: added ? "1px solid #5b21b6" : "1px solid #ddd",
+                background: added ? "#ede9fe" : "#ffffff",
+                fontWeight: "600",
+                cursor: "pointer",
+              }}
+            >
+              {added ? "✓ Added" : "➕ Add to Pick List"}
+            </button>
+          
+            <div
+              style={{
+                marginTop: "12px",
+                display: "flex",
+                gap: "10px",
+                flexWrap: "wrap",
+              }}
+            >
           <button
             style={getButtonStyle("wantToWatch")}
             onClick={() => setMovieStatus(movie, "wantToWatch")}
@@ -168,5 +182,6 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
         </div>
       </div>
     </div>
+</div>
   );
 }
