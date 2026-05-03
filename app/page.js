@@ -84,15 +84,25 @@ export default function Home() {
 
   return (
     <>
-    <style>
-          {`
-            @keyframes gradientShift {
-              0% { background-position: 0% 50%; }
-              50% { background-position: 100% 50%; }
-              100% { background-position: 0% 50%; }
-            }
-          `}
-        </style>
+      <style>
+        {`
+          @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+          }
+  
+          @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 rgba(124, 58, 237, 0.25); }
+            50% { box-shadow: 0 0 22px rgba(124, 58, 237, 0.65); }
+            100% { box-shadow: 0 0 0 rgba(124, 58, 237, 0.25); }
+          }
+  
+          @keyframes popcornBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+          }
+        `}
+      </style>
     
     <main
       style={{
@@ -159,7 +169,7 @@ export default function Home() {
               backgroundSize: loading ? "200% 200%" : "auto",
           
               animation: loading
-                ? "gradientShift 2.5s ease infinite"
+                ? "gradientShift 1.2s linear infinite, pulseGlow 1.4s ease-in-out infinite"
                 : "none",
           
               boxShadow:
@@ -168,7 +178,22 @@ export default function Home() {
                   : "0 8px 18px rgba(0,0,0,0.15)",
             }}
           >
-            {loading ? "🍿 Consulting the popcorn gods..." : "✨ Pick My Flick"}
+            {loading ? (
+                <>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      animation: "popcornBounce 0.7s ease-in-out infinite",
+                      marginRight: "6px",
+                    }}
+                  >
+                    🍿
+                  </span>
+                  Consulting the popcorn gods...
+                </>
+              ) : (
+                "✨ Pick My Flick"
+              )}
           </button>
 
         {intro && (
