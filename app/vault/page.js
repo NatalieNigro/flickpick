@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getMemory, saveMemory } from "../utils/memory";
 
-export default function MemoryPage() {
+export default function VaultPage() {
   const [memory, setMemory] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortAZ, setSortAZ] = useState(true);
@@ -16,29 +17,12 @@ export default function MemoryPage() {
   ];
 
   useEffect(() => {
-    const savedMemory = localStorage.getItem("flickpickMemory");
-    const oldPreferences = localStorage.getItem("flickpickPreferences");
-
-    if (savedMemory) {
-      setMemory(JSON.parse(savedMemory));
-    }
-
-    if (!savedMemory && oldPreferences) {
-      const parsed = JSON.parse(oldPreferences);
-
-      const migratedMemory = [
-        ...(parsed.loved || []).map((movie) => ({ ...movie, status: "loved" })),
-        ...(parsed.hardPass || []).map((movie) => ({ ...movie, status: "hardPass" })),
-      ];
-
-      setMemory(migratedMemory);
-      localStorage.setItem("flickpickMemory", JSON.stringify(migratedMemory));
-    }
+    setMemory(getMemory());
   }, []);
 
-  function saveMemory(newMemory) {
+  function updateMemory(newMemory) {
     setMemory(newMemory);
-    localStorage.setItem("flickpickMemory", JSON.stringify(newMemory));
+    saveMemory(newMemory);
   }
 
   function updateStatus(movie, newStatus) {
@@ -48,7 +32,7 @@ export default function MemoryPage() {
       isSameMovie(m) ? { ...m, status: newStatus } : m
     );
 
-    saveMemory(newMemory);
+    updateMemory(newMemory);
   }
 
   function clearMovie(movie) {
@@ -56,7 +40,7 @@ export default function MemoryPage() {
 
     const newMemory = memory.filter((m) => !isSameMovie(m));
 
-    saveMemory(newMemory);
+    updateMemory(newMemory);
   }
 
   function getFilteredAndSortedMovies(statusKey) {
@@ -139,9 +123,9 @@ export default function MemoryPage() {
         <h1 style={{ fontSize: "38px", marginTop: 0 }}>The Vault</h1>
 
         <p style={{ fontSize: "17px", lineHeight: "1.5", marginBottom: "28px" }}>
-          Everything you’ve watched, loved, rejected, or are still deciding on lives here. 
-          Your personal movie vault, fully under your control. This is where FlickPick
-          learns what you actually want to watch, and what
+          Everything you’ve watched, loved, rejected, or are still deciding on
+          lives here. Your personal movie vault, fully under your control. This
+          is where FlickPick learns what you actually want to watch, and what
           should never darken your screen again.
         </p>
 
