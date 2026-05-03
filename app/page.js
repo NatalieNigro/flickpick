@@ -83,8 +83,8 @@ export default function Home() {
   }
 
   return (
+    <>
     <style>
-      <>
           {`
             @keyframes gradientShift {
               0% { background-position: 0% 50%; }
@@ -183,6 +183,7 @@ export default function Home() {
           setMovieStatus={setMovieStatus}
         />
       </section>
-    </main>
-  );
+      </main>
+  </>
+);
 }
