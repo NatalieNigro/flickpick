@@ -139,8 +139,9 @@ export default function MemoryPage() {
         <h1 style={{ fontSize: "38px", marginTop: 0 }}>The Vault</h1>
 
         <p style={{ fontSize: "17px", lineHeight: "1.5", marginBottom: "28px" }}>
-          Search, sort, and update your movie memory here. This is where FlickPick
-          learns what you actually want to watch, what you might watch later, and what
+          Everything you’ve watched, loved, rejected, or are still deciding on lives here. 
+          Your personal movie vault, fully under your control. This is where FlickPick
+          learns what you actually want to watch, and what
           should never darken your screen again.
         </p>
 
