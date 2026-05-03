@@ -51,6 +51,10 @@ export default function NavBar() {
         <Link href="/pick-list" style={navStyle("/pick-list")}>
           Pick List
         </Link>
+
+        <Link href="/settings" style={navStyle("/settings")}>
+          Settings
+        </Link>
       </div>
     </nav>
   );
