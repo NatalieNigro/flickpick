@@ -115,6 +115,20 @@ export default function Home() {
   // PAGE UI
   // -----------------------------
 
+  function getButtonStyle(movie, status) {
+  const isSelected = memory.find(
+    (m) => m.title === movie.title && m.year === movie.year
+  )?.status === status;
+
+  return {
+    padding: "8px 12px",
+    borderRadius: "999px",
+    border: isSelected ? "2px solid #5b21b6" : "1px solid #ddd",
+    background: isSelected ? "#ede9fe" : "#ffffff",
+    fontWeight: isSelected ? "700" : "500",
+    cursor: "pointer",
+    };
+  }
   return (
     <main
       style={{
@@ -285,23 +299,38 @@ export default function Home() {
                       flexWrap: "wrap",
                     }}
                   >
-                    <button onClick={() => setMovieStatus(movie, "wantToWatch")}>
+                    <button
+                      style={getButtonStyle(movie, "wantToWatch")}
+                      onClick={() => setMovieStatus(movie, "wantToWatch")}
+                    >
                       🎯 Want to Watch
                     </button>
 
-                    <button onClick={() => setMovieStatus(movie, "notInterested")}>
+                    <button
+                      style={getButtonStyle(movie, "notInterested")}
+                      onClick={() => setMovieStatus(movie, "notInterested")}
+                    >
                       🚫 Not Interested
                     </button>
 
-                    <button onClick={() => setMovieStatus(movie, "loved")}>
+                    <button
+                      style={getButtonStyle(movie, "loved")}
+                      onClick={() => setMovieStatus(movie, "loved")}
+                    >
                       ❤️ Loved
                     </button>
 
-                    <button onClick={() => setMovieStatus(movie, "meh")}>
+                    <button
+                      style={getButtonStyle(movie, "meh")}
+                      onClick={() => setMovieStatus(movie, "meh")}
+                    >
                       😐 Meh
                     </button>
 
-                    <button onClick={() => setMovieStatus(movie, "hardPass")}>
+                      <button
+                      style={getButtonStyle(movie, "hardPass")}
+                      onClick={() => setMovieStatus(movie, "hardPass")}
+                    >
                       ❌ Hard Pass
                     </button>
                   </div>
