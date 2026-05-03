@@ -11,15 +11,15 @@ const TAGS_KEY = "flickpickTags";
 // These are starter color choices for tags.
 // Keeping colors preset prevents unreadable neon chaos.
 export const TAG_COLORS = [
-  "#ede9fe", // soft purple
-  "#fce7f3", // soft pink
-  "#dbeafe", // soft blue
-  "#dcfce7", // soft green
-  "#fef3c7", // soft yellow
-  "#ffedd5", // soft orange
-  "#fee2e2", // soft red
-  "#e0f2fe", // soft sky
-];
+  { name: "Purple", value: "#ede9fe" },
+  { name: "Pink", value: "#fce7f3" },
+  { name: "Blue", value: "#dbeafe" },
+  { name: "Green", value: "#dcfce7" },
+  { name: "Yellow", value: "#fef3c7" },
+  { name: "Orange", value: "#ffedd5" },
+  { name: "Red", value: "#fee2e2" },
+  { name: "Sky Blue", value: "#e0f2fe" },
+];;
 
 // Load all saved tags from the browser
 export function getTags() {
