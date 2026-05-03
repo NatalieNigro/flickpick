@@ -4,9 +4,19 @@
 
 "use client";
 
-import { saveToPickList } from "../utils/pickList";
+import { saveToPickList, isInPickList } from "../utils/pickList";
+import { useEffect, useState } from "react";
 
 export default function MovieCard({ movie, memory, setMovieStatus }) {
+  // This remembers whether this movie has already been added to the Pick List
+  const [added, setAdded] = useState(false);
+
+  // When this movie card loads, check the browser storage
+  // and see if this movie is already in the Pick List
+  useEffect(() => {
+    setAdded(isInPickList(movie));
+  }, [movie]);
+  
   function getButtonStyle(status) {
     const isSelected =
       memory.find(
@@ -96,18 +106,21 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
         )}
 
         <button
-          onClick={() => saveToPickList(movie)}
+          onClick={() => {
+            saveToPickList(movie);
+            setAdded(true);
+          }}
           style={{
             marginTop: "10px",
             padding: "8px 12px",
             borderRadius: "999px",
-            border: "1px solid #ddd",
-            background: "#ffffff",
+            border: added ? "1px solid #5b21b6" : "1px solid #ddd",
+            background: added ? "#ede9fe" : "#ffffff",
             fontWeight: "600",
             cursor: "pointer",
           }}
         >
-          ➕ Add to Pick List
+          {added ? "✓ Added" : "➕ Add to Pick List"}
         </button>
 
         <div
