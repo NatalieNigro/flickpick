@@ -14,46 +14,37 @@ export async function POST(request) {
     }
 
     // Step 1: Search Watchmode for the movie by title.
-    // We include the year to help Watchmode find the correct version.
     const searchUrl = `https://api.watchmode.com/v1/search/?apiKey=${apiKey}&search_field=name&search_value=${encodeURIComponent(
       title
     )}`;
-
+    
     const searchResponse = await fetch(searchUrl);
     const searchData = await searchResponse.json();
-
-    // TEMPORARY DEBUGGING:
-    // Stop here and show us exactly what Watchmode sent back
-    return Response.json({
-      searchedFor: title,
-      searchData,
-    });
-
+    
     const titleResults = searchData.title_results || [];
     
     const bestMatch =
       titleResults.find(
         (result) =>
+          result.type === "movie" &&
           result.name?.toLowerCase() === title.toLowerCase() &&
           String(result.year) === String(year)
       ) || titleResults[0];
-
+    
     if (!bestMatch) {
       return Response.json({
         sources: [],
         message: "No Watchmode match found for this movie.",
       });
     }
-
     // Step 2: Use Watchmode's internal title ID to get streaming sources.
     // Region US keeps this focused on what a Texas/US user can access.
     const sourcesUrl = `https://api.watchmode.com/v1/title/${bestMatch.id}/sources/?apiKey=${apiKey}&regions=US`;
-
+    
     const sourcesResponse = await fetch(sourcesUrl);
     const sources = await sourcesResponse.json();
-
+    
     return Response.json({
-      searchedFor: `${title} ${year || ""}`,
       watchmodeId: bestMatch.id,
       matchedTitle: bestMatch.name,
       matchedYear: bestMatch.year,
