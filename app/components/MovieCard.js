@@ -4,7 +4,6 @@
 // It handles:
 // - movie poster and details
 // - Add to Pick List button
-// - Where to Watch lookup
 // - status buttons for The Vault
 // -----------------------------------------------------------
 
@@ -16,15 +15,6 @@ import { saveToPickList, isInPickList } from "../utils/pickList";
 export default function MovieCard({ movie, memory, setMovieStatus }) {
   // Tracks whether this movie has already been added to the Pick List
   const [added, setAdded] = useState(false);
-
-  // Stores the streaming/rental/buy options returned by our API
-  const [watchSources, setWatchSources] = useState([]);
-
-  // Stores a helpful message if no watch sources are found
-  const [watchMessage, setWatchMessage] = useState("");
-
-  // Tracks whether the Where to Watch lookup is currently running
-  const [watchLoading, setWatchLoading] = useState(false);
 
   // When this movie card loads, check if the movie is already in the Pick List
   useEffect(() => {
@@ -46,35 +36,6 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
       fontWeight: isSelected ? "700" : "500",
       cursor: "pointer",
     };
-  }
-
-  // Calls our server-side API route to ask where this movie can be watched
-  async function findWhereToWatch() {
-    setWatchLoading(true);
-    setWatchMessage("");
-    setWatchSources([]);
-
-    try {
-      const res = await fetch("/api/watch", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: movie.title,
-          year: movie.year,
-        }),
-      });
-
-      const data = await res.json();
-
-      setWatchSources(data.sources || []);
-      setWatchMessage(data.message || "");
-    } catch (error) {
-      setWatchMessage("Couldn’t find where to watch this one.");
-    } finally {
-      setWatchLoading(false);
-    }
   }
 
   return (
@@ -165,84 +126,22 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
             paddingTop: "18px",
           }}
         >
-          {/* Main action buttons */}
-          <div
+          <button
+            onClick={() => {
+              saveToPickList(movie);
+              setAdded(true);
+            }}
             style={{
-              display: "flex",
-              gap: "10px",
-              flexWrap: "wrap",
+              padding: "8px 12px",
+              borderRadius: "999px",
+              border: added ? "1px solid #5b21b6" : "1px solid #ddd",
+              background: added ? "#ede9fe" : "#ffffff",
+              fontWeight: "600",
+              cursor: "pointer",
             }}
           >
-            <button
-              onClick={() => {
-                saveToPickList(movie);
-                setAdded(true);
-              }}
-              style={{
-                padding: "8px 12px",
-                borderRadius: "999px",
-                border: added ? "1px solid #5b21b6" : "1px solid #ddd",
-                background: added ? "#ede9fe" : "#ffffff",
-                fontWeight: "600",
-                cursor: "pointer",
-              }}
-            >
-              {added ? "✓ Added" : "➕ Add to Pick List"}
-            </button>
-
-            <button
-              onClick={findWhereToWatch}
-              disabled={watchLoading}
-              style={{
-                padding: "8px 12px",
-                borderRadius: "999px",
-                border: "1px solid #ddd",
-                background: watchLoading ? "#ede9fe" : "#ffffff",
-                color: "#5b21b6",
-                fontWeight: "600",
-                cursor: watchLoading ? "wait" : "pointer",
-              }}
-            >
-              {watchLoading ? "Searching..." : "📺 Where to Watch"}
-            </button>
-          </div>
-
-          {/* Where to Watch results */}
-          {watchMessage && (
-            <p style={{ marginTop: "12px", fontSize: "14px", color: "#666" }}>
-              {watchMessage}
-            </p>
-          )}
-
-          {watchSources.length > 0 && (
-            <div style={{ marginTop: "12px" }}>
-              <p style={{ fontWeight: "700", marginBottom: "8px" }}>
-                Available on:
-              </p>
-
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {watchSources.slice(0, 6).map((source, index) => (
-                  <a
-                    key={`${source.name}-${source.type}-${index}`}
-                    href={source.web_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      padding: "7px 10px",
-                      borderRadius: "999px",
-                      background: "#ede9fe",
-                      color: "#5b21b6",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      textDecoration: "none",
-                    }}
-                  >
-                    {source.name} {source.type ? `(${source.type})` : ""}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
+            {added ? "✓ Added" : "➕ Add to Pick List"}
+          </button>
 
           {/* Vault status buttons */}
           <div
