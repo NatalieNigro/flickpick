@@ -136,7 +136,7 @@ export default function MemoryPage() {
           boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
         }}
       >
-        <h1 style={{ fontSize: "38px", marginTop: 0 }}>FlickPick Memory</h1>
+        <h1 style={{ fontSize: "38px", marginTop: 0 }}>The Vault</h1>
 
         <p style={{ fontSize: "17px", lineHeight: "1.5", marginBottom: "28px" }}>
           Search, sort, and update your movie memory here. This is where FlickPick
