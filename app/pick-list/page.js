@@ -2,10 +2,15 @@
 
 import { useEffect, useState } from "react";
 import PickListCard from "../components/PickListCard";
-import { getPickList, removeFromPickList } from "../utils/pickList";
+import {
+  getPickList,
+  removeFromPickList,
+  savePickListOrder,
+} from "../utils/pickList";
 
 export default function PickListPage() {
   const [movies, setMovies] = useState([]);
+  const [draggedIndex, setDraggedIndex] = useState(null);
 
   useEffect(() => {
     setMovies(getPickList());
@@ -16,6 +21,39 @@ export default function PickListPage() {
     setMovies(getPickList());
   }
 
+  function handleDragStart(index) {
+    setDraggedIndex(index);
+  }
+
+  function handleDrop(dropIndex) {
+    // If nothing is being dragged, or the user drops it where it already was,
+    // there is nothing to change.
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      return;
+    }
+  
+    // Make a copy of the current Pick List so we can rearrange it safely
+    const updatedMovies = [...movies];
+  
+    // Pull out the movie the user started dragging
+    const draggedMovie = updatedMovies[draggedIndex];
+  
+    // Remove the dragged movie from its old spot
+    updatedMovies.splice(draggedIndex, 1);
+  
+    // Insert the dragged movie into its new spot
+    updatedMovies.splice(dropIndex, 0, draggedMovie);
+  
+    // Update what the user sees on the page
+    setMovies(updatedMovies);
+  
+    // Save the newly arranged order so it sticks after refresh
+    savePickListOrder(updatedMovies);
+  
+    // Clear the drag tracking now that the move is done
+    setDraggedIndex(null);
+  }
+  
   return (
     <main
       style={{
@@ -61,7 +99,11 @@ export default function PickListPage() {
               <PickListCard
                 key={`${movie.title}-${movie.year}-${index}`}
                 movie={movie}
+                index={index}
                 onRemove={handleRemove}
+                onDragStart={handleDragStart}
+                onDragOver={() => {}}
+                onDrop={handleDrop}
               />
             ))}
           </div>
