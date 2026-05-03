@@ -22,7 +22,14 @@ export async function POST(request) {
     const searchResponse = await fetch(searchUrl);
     const searchData = await searchResponse.json();
 
-    const bestMatch = searchData.title_results?.[0];
+    const titleResults = searchData.title_results || [];
+    
+    const bestMatch =
+      titleResults.find(
+        (result) =>
+          result.name?.toLowerCase() === title.toLowerCase() &&
+          String(result.year) === String(year)
+      ) || titleResults[0];
 
     if (!bestMatch) {
       return Response.json({
@@ -39,7 +46,10 @@ export async function POST(request) {
     const sources = await sourcesResponse.json();
 
     return Response.json({
+      searchedFor: `${title} ${year || ""}`,
       watchmodeId: bestMatch.id,
+      matchedTitle: bestMatch.name,
+      matchedYear: bestMatch.year,
       sources,
     });
   } catch (error) {
