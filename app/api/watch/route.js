@@ -16,7 +16,7 @@ export async function POST(request) {
     // Step 1: Search Watchmode for the movie by title.
     // We include the year to help Watchmode find the correct version.
     const searchUrl = `https://api.watchmode.com/v1/search/?apiKey=${apiKey}&search_field=name&search_value=${encodeURIComponent(
-      `${title} ${year || ""}`
+      title
     )}`;
 
     const searchResponse = await fetch(searchUrl);
@@ -25,7 +25,7 @@ export async function POST(request) {
     // TEMPORARY DEBUGGING:
     // Stop here and show us exactly what Watchmode sent back
     return Response.json({
-      searchedFor: `${title} ${year || ""}`,
+      searchedFor: title,
       searchData,
     });
 
