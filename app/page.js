@@ -83,6 +83,17 @@ export default function Home() {
   }
 
   return (
+    <style>
+      <>
+          {`
+            @keyframes gradientShift {
+              0% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+          `}
+        </style>
+    
     <main
       style={{
         minHeight: "100vh",
@@ -128,25 +139,37 @@ export default function Home() {
         />
 
         <button
-          onClick={pickMovie}
-          disabled={loading || !vibe.trim()}
-          style={{
-            marginTop: "18px",
-            padding: "14px 24px",
-            fontSize: "16px",
-            borderRadius: "999px",
-            border: "none",
-            cursor: loading || !vibe.trim() ? "not-allowed" : "pointer",
-            background: loading || !vibe.trim() ? "#ddd" : "#111827",
-            color: "white",
-            boxShadow:
-              loading || !vibe.trim()
-                ? "none"
-                : "0 8px 18px rgba(0,0,0,0.15)",
-          }}
-        >
-          {loading ? "Consulting the popcorn gods..." : "✨ Pick My Flick"}
-        </button>
+            onClick={pickMovie}
+            disabled={loading || !vibe.trim()}
+            style={{
+              marginTop: "18px",
+              padding: "14px 24px",
+              fontSize: "16px",
+              borderRadius: "999px",
+              border: "none",
+              cursor: loading || !vibe.trim() ? "not-allowed" : "pointer",
+              color: "white",
+              fontWeight: "600",
+          
+              // ✨ Animated gradient when loading
+              background: loading
+                ? "linear-gradient(270deg, #5b21b6, #7c3aed, #5b21b6)"
+                : "#111827",
+          
+              backgroundSize: loading ? "200% 200%" : "auto",
+          
+              animation: loading
+                ? "gradientShift 2.5s ease infinite"
+                : "none",
+          
+              boxShadow:
+                loading || !vibe.trim()
+                  ? "0 6px 14px rgba(124, 58, 237, 0.25)"
+                  : "0 8px 18px rgba(0,0,0,0.15)",
+            }}
+          >
+            {loading ? "🍿 Consulting the popcorn gods..." : "✨ Pick My Flick"}
+          </button>
 
         {intro && (
           <p style={{ marginTop: "32px", fontSize: "18px", lineHeight: "1.5" }}>
