@@ -1,8 +1,22 @@
 "use client";
 
-export default function PickListCard({ movie, onRemove }) {
+export default function PickListCard({
+  movie,
+  index,
+  onRemove,
+  onDragStart,
+  onDragOver,
+  onDrop,
+}) {
   return (
     <div
+      draggable
+      onDragStart={() => onDragStart(index)}
+      onDragOver={(e) => {
+        e.preventDefault();
+        onDragOver(index);
+      }}
+      onDrop={() => onDrop(index)}
       style={{
         display: "flex",
         gap: "18px",
@@ -12,17 +26,16 @@ export default function PickListCard({ movie, onRemove }) {
         background: "#fafafa",
         border: "1px solid #eee",
         boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
+        cursor: "grab",
       }}
     >
-      {/* This is just a visual grab handle for now */}
       <div
-        title="Reordering coming soon"
+        title="Drag to reorder"
         style={{
           display: "flex",
           alignItems: "center",
           color: "#999",
           fontSize: "22px",
-          cursor: "grab",
           userSelect: "none",
           padding: "0 4px",
         }}
@@ -30,7 +43,6 @@ export default function PickListCard({ movie, onRemove }) {
         ⋮⋮
       </div>
 
-      {/* Small poster */}
       {movie.poster ? (
         <img
           src={movie.poster}
@@ -65,7 +77,6 @@ export default function PickListCard({ movie, onRemove }) {
         </div>
       )}
 
-      {/* Movie details */}
       <div style={{ flex: 1 }}>
         <h2 style={{ margin: "0 0 4px", fontSize: "22px" }}>
           {movie.title}
@@ -94,10 +105,12 @@ export default function PickListCard({ movie, onRemove }) {
         )}
       </div>
 
-      {/* Remove button */}
       <div style={{ display: "flex", alignItems: "flex-start" }}>
         <button
-          onClick={() => onRemove(movie)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(movie);
+          }}
           style={{
             padding: "10px 14px",
             borderRadius: "999px",
