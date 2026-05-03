@@ -45,3 +45,12 @@ export function removeFromPickList(title, year) {
 
   localStorage.setItem(PICK_LIST_KEY, JSON.stringify(updated));
 }
+
+// Check if a movie is already in the Pick List
+export function isInPickList(movie) {
+  const current = getPickList();
+
+  return current.some(
+    (m) => m.title === movie.title && m.year === movie.year
+  );
+}
