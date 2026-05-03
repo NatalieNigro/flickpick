@@ -6,7 +6,7 @@ import { getTags, saveTags, createTag, TAG_COLORS } from "../utils/tags";
 export default function SettingsPage() {
   const [tags, setTags] = useState([]);
   const [newTagName, setNewTagName] = useState("");
-  const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0]);
+  const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0].value);
 
   useEffect(() => {
     setTags(getTags());
@@ -33,7 +33,7 @@ export default function SettingsPage() {
 
     updateTags([...tags, newTag]);
     setNewTagName("");
-    setNewTagColor(TAG_COLORS[0]);
+    setNewTagColor(TAG_COLORS[0].value);
   }
 
   function handleRenameTag(tagId, newName) {
@@ -122,8 +122,8 @@ export default function SettingsPage() {
             }}
           >
             {TAG_COLORS.map((color) => (
-              <option key={color} value={color}>
-                {color}
+              <option key={color.value} value={color.value}>
+                {color.name}
               </option>
             ))}
           </select>
@@ -197,8 +197,8 @@ export default function SettingsPage() {
                   }}
                 >
                   {TAG_COLORS.map((color) => (
-                    <option key={color} value={color}>
-                      {color}
+                    <option key={color.value} value={color.value}>
+                      {color.name}
                     </option>
                   ))}
                 </select>
