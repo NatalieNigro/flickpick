@@ -19,7 +19,7 @@ export const TAG_COLORS = [
   { name: "Orange", value: "#ffedd5" },
   { name: "Red", value: "#fee2e2" },
   { name: "Sky Blue", value: "#e0f2fe" },
-];;
+];
 
 // Load all saved tags from the browser
 export function getTags() {
