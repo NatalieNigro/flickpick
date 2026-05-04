@@ -40,10 +40,11 @@ export default function Home() {
       m.title === movie.title && m.year === movie.year;
 
     const existingMovie = memory.find((m) => isSameMovie(m));
+    const newStatus = existingMovie?.status === status ? null : status;
 
     const updatedMovie = existingMovie
-      ? { ...existingMovie, ...movie, status }
-      : { ...movie, status };
+      ? { ...existingMovie, ...movie, status: newStatus }
+      : { ...movie, status: newStatus };
 
     const newMemory = [
       ...memory.filter((m) => !isSameMovie(m)),
