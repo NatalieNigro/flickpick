@@ -1,32 +1,46 @@
 // -----------------------------------------------------------
 // MOVIE CARD
-// This file is responsible for showing ONE movie card.
+//
+// This component displays ONE movie in the grid.
 // It handles:
-// - movie poster and details
-// - Add to Pick List button
-// - status buttons for The Vault
+// - showing movie details (poster, title, etc.)
+// - adding the movie to the Pick List
+// - setting the movie’s status (The Vault)
+// - attaching user-defined tags to the movie
 // -----------------------------------------------------------
 
 "use client";
 
 import { useEffect, useState } from "react";
 import { saveToPickList, isInPickList } from "../utils/pickList";
+import TagSelector from "./TagSelector";
 
-export default function MovieCard({ movie, memory, setMovieStatus }) {
-  // Tracks whether this movie has already been added to the Pick List
+export default function MovieCard({
+  movie,
+  memory,
+  setMovieStatus,
+  updateMovieTags,
+}) {
+  // Tracks whether this movie is already in the Pick List
   const [added, setAdded] = useState(false);
 
-  // When this movie card loads, check if the movie is already in the Pick List
+  // Check if this movie already exists in The Vault (memory)
+  const savedMovie = memory.find(
+    (m) => m.title === movie.title && m.year === movie.year
+  );
+
+  // If the movie exists in memory, use its saved tags
+  // Otherwise, default to an empty tag list
+  const selectedTagIds = savedMovie?.tagIds || [];
+
+  // When the card loads, check if the movie is already in the Pick List
   useEffect(() => {
     setAdded(isInPickList(movie));
   }, [movie]);
 
-  // Controls how the Vault status buttons look when selected
+  // Controls how the Vault status buttons look (highlight selected one)
   function getButtonStyle(status) {
-    const isSelected =
-      memory.find(
-        (m) => m.title === movie.title && m.year === movie.year
-      )?.status === status;
+    const isSelected = savedMovie?.status === status;
 
     return {
       padding: "8px 12px",
@@ -50,6 +64,7 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
         flexDirection: "column",
       }}
     >
+      {/* Movie Poster (or fallback if missing) */}
       {movie.poster ? (
         <img
           src={movie.poster}
@@ -79,6 +94,7 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
         </div>
       )}
 
+      {/* Main content area */}
       <div
         style={{
           padding: "24px",
@@ -87,6 +103,7 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
           flex: 1,
         }}
       >
+        {/* Title and year */}
         <h2 style={{ marginTop: 0, fontSize: "22px" }}>
           {movie.title}
         </h2>
@@ -95,6 +112,7 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
           {movie.year}
         </p>
 
+        {/* Basic details */}
         <p style={{ fontSize: "14px", lineHeight: "1.5", color: "#444" }}>
           <strong>Genre:</strong> {movie.genre}
         </p>
@@ -103,29 +121,33 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
           <strong>Actors:</strong> {movie.actors}
         </p>
 
+        {/* IMDb rating (only if available) */}
         {movie.imdbRating && movie.imdbRating !== "N/A" && (
           <p style={{ fontSize: "14px", lineHeight: "1.5", color: "#444" }}>
             <strong>IMDb:</strong> {movie.imdbRating}
           </p>
         )}
 
+        {/* AI explanation of why this movie fits the vibe */}
         <p style={{ lineHeight: "1.6" }}>
           {movie.why}
         </p>
 
+        {/* Plot summary (if available) */}
         {movie.plot && (
           <p style={{ fontSize: "14px", lineHeight: "1.5", color: "#666" }}>
             <strong>Plot:</strong> {movie.plot}
           </p>
         )}
 
-        {/* This bottom area stays pushed to the bottom of the card */}
+        {/* Bottom section: always stays pinned to the bottom */}
         <div
           style={{
             marginTop: "auto",
             paddingTop: "18px",
           }}
         >
+          {/* Add to Pick List button */}
           <button
             onClick={() => {
               saveToPickList(movie);
@@ -187,6 +209,16 @@ export default function MovieCard({ movie, memory, setMovieStatus }) {
               ❌ Hard Pass
             </button>
           </div>
+
+          {/* Tag selector component */}
+          {/* This allows the user to attach tags to this movie */}
+          <TagSelector
+            selectedTagIds={selectedTagIds}
+            onChange={(tagIds) => {
+              // When tags change, update this movie in The Vault
+              updateMovieTags(movie, tagIds);
+            }}
+          />
         </div>
       </div>
     </div>
