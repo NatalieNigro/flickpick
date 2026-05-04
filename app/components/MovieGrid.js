@@ -2,7 +2,12 @@
 
 import MovieCard from "./MovieCard";
 
-export default function MovieGrid({ movies, memory, setMovieStatus }) {
+export default function MovieGrid({
+  movies,
+  memory,
+  setMovieStatus,
+  updateMovieTags,
+}) {
   if (movies.length === 0) {
     return null;
   }
@@ -22,6 +27,7 @@ export default function MovieGrid({ movies, memory, setMovieStatus }) {
           movie={movie}
           memory={memory}
           setMovieStatus={setMovieStatus}
+          updateMovieTags={updateMovieTags}
         />
       ))}
     </div>
