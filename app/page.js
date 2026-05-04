@@ -53,6 +53,24 @@ export default function Home() {
     updateMemory(newMemory);
   }
 
+  function updateMovieTags(movie, tagIds) {
+  const isSameMovie = (m) =>
+    m.title === movie.title && m.year === movie.year;
+
+  const existingMovie = memory.find((m) => isSameMovie(m));
+
+  const updatedMovie = existingMovie
+    ? { ...existingMovie, ...movie, tagIds }
+    : { ...movie, status: "wantToWatch", tagIds };
+
+  const newMemory = [
+    ...memory.filter((m) => !isSameMovie(m)),
+    updatedMovie,
+  ];
+
+  updateMemory(newMemory);
+}
+
   async function pickMovie() {
     setLoading(true);
     setIntro("");
@@ -206,6 +224,7 @@ export default function Home() {
           movies={movies}
           memory={memory}
           setMovieStatus={setMovieStatus}
+          updateMovieTags={updateMovieTags}
         />
       </section>
       </main>
