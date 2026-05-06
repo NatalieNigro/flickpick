@@ -1,17 +1,6 @@
-// -----------------------------------------------------------
-// MOVIE CARD
-//
-// This component displays ONE movie in the grid.
-// It handles:
-// - showing movie details (poster, title, etc.)
-// - adding the movie to the Pick List
-// - setting the movie’s status (The Vault)
-// - attaching user-defined tags to the movie
-// -----------------------------------------------------------
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { saveToPickList, isInPickList } from "../utils/pickList";
 import TagSelector from "./TagSelector";
 
@@ -21,8 +10,9 @@ export default function MovieCard({
   setMovieStatus,
   updateMovieTags,
 }) {
-  // Tracks whether this movie is already in the Pick List
   const [added, setAdded] = useState(false);
+  const [tagOpen, setTagOpen] = useState(false);
+  const tagSelectorRef = useRef(null);
 
   // Check if this movie already exists in The Vault (memory)
   const savedMovie = memory.find(
@@ -33,10 +23,20 @@ export default function MovieCard({
   // Otherwise, default to an empty tag list
   const selectedTagIds = savedMovie?.tagIds || [];
 
-  // When the card loads, check if the movie is already in the Pick List
   useEffect(() => {
     setAdded(isInPickList(movie));
   }, [movie]);
+
+  useEffect(() => {
+    if (!tagOpen) return;
+    function handleMouseDown(e) {
+      if (!tagSelectorRef.current?.contains(e.target)) {
+        setTagOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [tagOpen]);
 
   // Controls how the Vault status buttons look (highlight selected one)
   function getButtonStyle(status) {
@@ -210,14 +210,12 @@ export default function MovieCard({
             </button>
           </div>
 
-          {/* Tag selector component */}
-          {/* This allows the user to attach tags to this movie */}
           <TagSelector
+            ref={tagSelectorRef}
             selectedTagIds={selectedTagIds}
-            onChange={(tagIds) => {
-              // When tags change, update this movie in The Vault
-              updateMovieTags(movie, tagIds);
-            }}
+            open={tagOpen}
+            onToggle={() => setTagOpen((prev) => !prev)}
+            onChange={(tagIds) => updateMovieTags(movie, tagIds)}
           />
         </div>
       </div>
