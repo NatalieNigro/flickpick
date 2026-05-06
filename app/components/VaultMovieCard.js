@@ -239,7 +239,7 @@ export default function VaultMovieCard({
                 <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#5b21b6", marginBottom: "6px" }}>
                   FlickPick's Take
                 </div>
-                <div style={{ borderLeft: "3px solid #7c3aed", paddingLeft: "12px", fontStyle: "italic", color: "#111", lineHeight: "1.6", fontSize: "13px" }}>
+                <div style={{ borderLeft: "2px solid #c4b5fd", paddingLeft: "12px", fontStyle: "italic", color: "#111", lineHeight: "1.6", fontSize: "13px" }}>
                   {movie.why}
                 </div>
               </div>
