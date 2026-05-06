@@ -1,15 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getTags } from "../utils/tags";
 
 export default function TagSelector({ selectedTagIds = [], onChange }) {
   const [tags, setTags] = useState([]);
   const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     setTags(getTags());
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleMouseDown(e) {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [open]);
 
   function toggleTag(tagId) {
     const alreadySelected = selectedTagIds.includes(tagId);
@@ -26,7 +38,7 @@ export default function TagSelector({ selectedTagIds = [], onChange }) {
   );
 
   return (
-    <div style={{ marginTop: "14px" }}>
+    <div ref={containerRef} style={{ marginTop: "14px" }}>
       {/* Selected Tags Display */}
       {selectedTags.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>

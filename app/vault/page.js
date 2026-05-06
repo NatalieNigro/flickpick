@@ -1,23 +1,74 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getMemory, saveMemory } from "../utils/memory";
+import { getTags } from "../utils/tags";
+import VaultMovieCard from "../components/VaultMovieCard";
+
+const STATUS_OPTIONS = [
+  { key: "all", label: "All Statuses" },
+  { key: "wantToWatch", label: "🎯 Want to Watch" },
+  { key: "notInterested", label: "🚫 Not Interested" },
+  { key: "loved", label: "❤️ Loved" },
+  { key: "meh", label: "😐 Meh" },
+  { key: "hardPass", label: "❌ Hard Pass" },
+];
+
+const SORT_OPTIONS = [
+  { key: "titleAZ", label: "Title A–Z" },
+  { key: "titleZA", label: "Title Z–A" },
+  { key: "yearNewest", label: "Year: Newest First" },
+  { key: "yearOldest", label: "Year: Oldest First" },
+  { key: "imdbHigh", label: "IMDb Rating: High to Low" },
+];
+
+const selectStyle = {
+  padding: "10px 12px",
+  borderRadius: "12px",
+  border: "1px solid #ddd",
+  fontSize: "14px",
+  background: "white",
+  cursor: "pointer",
+};
 
 export default function VaultPage() {
   const [memory, setMemory] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortAZ, setSortAZ] = useState(true);
+  const [tags, setTags] = useState([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [tagFilter, setTagFilter] = useState("all");
+  const [sort, setSort] = useState("titleAZ");
 
-  const statuses = [
-    { key: "wantToWatch", label: "🎯 Want to Watch" },
-    { key: "notInterested", label: "🚫 Not Interested" },
-    { key: "hardPass", label: "❌ Hard Pass" },
-    { key: "meh", label: "😐 Meh" },
-    { key: "loved", label: "❤️ Loved" },
-  ];
+  // Tracks which card has an open panel and holds a ref to that panel's DOM element.
+  // Only one panel can be open at a time across all cards.
+  const [openPanel, setOpenPanel] = useState(null); // { movieKey, type: "tag"|"notes" }
+  const openElemRef = useRef(null);
+
+  useEffect(() => {
+    if (!openPanel) return;
+    function handleMouseDown(e) {
+      if (openElemRef.current && !openElemRef.current.contains(e.target)) {
+        setOpenPanel(null);
+        openElemRef.current = null;
+      }
+    }
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [openPanel]);
+
+  function openCardPanel(movieKey, type, elem) {
+    openElemRef.current = elem;
+    setOpenPanel({ movieKey, type });
+  }
+
+  function closeCardPanel() {
+    setOpenPanel(null);
+    openElemRef.current = null;
+  }
 
   useEffect(() => {
     setMemory(getMemory());
+    setTags(getTags());
   }, []);
 
   function updateMemory(newMemory) {
@@ -26,80 +77,47 @@ export default function VaultPage() {
   }
 
   function updateStatus(movie, newStatus) {
-    const isSameMovie = (m) => m.title === movie.title && m.year === movie.year;
-
-    const newMemory = memory.map((m) =>
-      isSameMovie(m) ? { ...m, status: newStatus } : m
-    );
-
-    updateMemory(newMemory);
+    const isSame = (m) => m.title === movie.title && m.year === movie.year;
+    updateMemory(memory.map((m) => (isSame(m) ? { ...m, status: newStatus } : m)));
   }
 
-  function clearMovie(movie) {
-    const isSameMovie = (m) => m.title === movie.title && m.year === movie.year;
-
-    const newMemory = memory.filter((m) => !isSameMovie(m));
-
-    updateMemory(newMemory);
+  function updateTags(movie, tagIds) {
+    const isSame = (m) => m.title === movie.title && m.year === movie.year;
+    updateMemory(memory.map((m) => (isSame(m) ? { ...m, tagIds } : m)));
   }
 
-  function getFilteredAndSortedMovies(statusKey) {
-    return memory
-      .filter((movie) => movie.status === statusKey)
-      .filter((movie) =>
-        movie.title.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .sort((a, b) => {
-        if (sortAZ) {
+  function updateNotes(movie, notes) {
+    const isSame = (m) => m.title === movie.title && m.year === movie.year;
+    updateMemory(memory.map((m) => (isSame(m) ? { ...m, notes } : m)));
+  }
+
+  const displayed = memory
+    .filter((m) =>
+      !search || m.title.toLowerCase().includes(search.toLowerCase())
+    )
+    .filter((m) => statusFilter === "all" || m.status === statusFilter)
+    .filter(
+      (m) => tagFilter === "all" || (m.tagIds || []).includes(tagFilter)
+    )
+    .sort((a, b) => {
+      switch (sort) {
+        case "titleAZ":
           return a.title.localeCompare(b.title);
+        case "titleZA":
+          return b.title.localeCompare(a.title);
+        case "yearNewest":
+          return (parseInt(b.year) || 0) - (parseInt(a.year) || 0);
+        case "yearOldest":
+          return (parseInt(a.year) || 0) - (parseInt(b.year) || 0);
+        case "imdbHigh": {
+          const ra = parseFloat(a.imdbRating) || 0;
+          const rb = parseFloat(b.imdbRating) || 0;
+          return rb - ra;
         }
-
-        return b.title.localeCompare(a.title);
-      });
-  }
-
-  function MovieMemoryCard({ movie }) {
-    return (
-      <div
-        style={{
-          padding: "16px",
-          borderRadius: "16px",
-          background: "white",
-          border: "1px solid #eee",
-          marginBottom: "12px",
-        }}
-      >
-        <div style={{ fontWeight: "700", marginBottom: "6px" }}>
-          {movie.title}
-        </div>
-
-        <div style={{ color: "#666", fontSize: "14px", marginBottom: "12px" }}>
-          {movie.year}
-        </div>
-
-        <select
-          value={movie.status}
-          onChange={(e) => updateStatus(movie, e.target.value)}
-          style={{
-            padding: "8px",
-            borderRadius: "10px",
-            border: "1px solid #ddd",
-            marginRight: "10px",
-          }}
-        >
-          {statuses.map((status) => (
-            <option key={status.key} value={status.key}>
-              {status.label}
-            </option>
-          ))}
-        </select>
-
-        <button onClick={() => clearMovie(movie)}>
-          Clear
-        </button>
-      </div>
-    );
-  }
+        default:
+          return 0;
+      }
+    });
 
   return (
     <main
@@ -112,7 +130,7 @@ export default function VaultPage() {
     >
       <section
         style={{
-          maxWidth: "1100px",
+          maxWidth: "860px",
           margin: "0 auto",
           background: "white",
           borderRadius: "24px",
@@ -122,85 +140,118 @@ export default function VaultPage() {
       >
         <h1 style={{ fontSize: "38px", marginTop: 0 }}>The Vault</h1>
 
-        <p style={{ fontSize: "17px", lineHeight: "1.5", marginBottom: "28px" }}>
-          Everything you’ve watched, loved, rejected, or are still deciding on
+        <p
+          style={{
+            fontSize: "17px",
+            lineHeight: "1.5",
+            marginBottom: "28px",
+          }}
+        >
+          Everything you've watched, loved, rejected, or are still deciding on
           lives here. Your personal movie vault, fully under your control. This
           is where FlickPick learns what you actually want to watch, and what
           should never darken your screen again.
         </p>
 
+        {/* Filter / search bar */}
         <div
           style={{
             display: "flex",
-            gap: "12px",
+            gap: "10px",
             flexWrap: "wrap",
-            marginBottom: "30px",
+            marginBottom: "20px",
           }}
         >
           <input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by movie title..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by title..."
             style={{
               flex: "1",
-              minWidth: "240px",
-              padding: "12px",
-              borderRadius: "14px",
+              minWidth: "200px",
+              padding: "10px 14px",
+              borderRadius: "12px",
               border: "1px solid #ddd",
-              fontSize: "15px",
+              fontSize: "14px",
             }}
           />
 
-          <button
-            onClick={() => setSortAZ(!sortAZ)}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={selectStyle}
+          >
+            {STATUS_OPTIONS.map((o) => (
+              <option key={o.key} value={o.key}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={tagFilter}
+            onChange={(e) => setTagFilter(e.target.value)}
+            style={selectStyle}
+          >
+            <option value="all">All Tags</option>
+            {tags.map((tag) => (
+              <option key={tag.id} value={tag.id}>
+                {tag.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            style={selectStyle}
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.key} value={o.key}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Result count */}
+        <p style={{ color: "#999", fontSize: "13px", marginBottom: "16px" }}>
+          {displayed.length} {displayed.length === 1 ? "movie" : "movies"}
+        </p>
+
+        {/* Movie list */}
+        {displayed.length === 0 ? (
+          <p
             style={{
-              padding: "12px 16px",
-              borderRadius: "999px",
-              border: "1px solid #ddd",
-              background: "#f5f0ff",
-              cursor: "pointer",
+              color: "#777",
+              textAlign: "center",
+              padding: "48px 0",
+              fontSize: "16px",
             }}
           >
-            Sort: {sortAZ ? "A to Z" : "Z to A"}
-          </button>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "22px",
-          }}
-        >
-          {statuses.map((status) => {
-            const moviesForStatus = getFilteredAndSortedMovies(status.key);
-
-            return (
-              <div
-                key={status.key}
-                style={{
-                  padding: "22px",
-                  borderRadius: "20px",
-                  background: "#fafafa",
-                  border: "1px solid #eee",
-                }}
-              >
-                <h2 style={{ marginTop: 0 }}>{status.label}</h2>
-
-                {moviesForStatus.length === 0 ? (
-                  <p style={{ color: "#777" }}>Nothing here yet.</p>
-                ) : (
-                  moviesForStatus.map((movie, index) => (
-                    <MovieMemoryCard
-                      key={`${status.key}-${movie.title}-${movie.year}-${index}`}
-                      movie={movie}
-                    />
-                  ))
-                )}
-              </div>
-            );
-          })}
-        </div>
+            Nothing here yet. Start rating movies from the home page.
+          </p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {displayed.map((movie, i) => {
+              const movieKey = `${movie.title}-${movie.year}`;
+              const cardOpenPanel =
+                openPanel?.movieKey === movieKey ? openPanel.type : null;
+              return (
+                <VaultMovieCard
+                  key={`${movieKey}-${i}`}
+                  movie={movie}
+                  openPanel={cardOpenPanel}
+                  onOpen={(type, elem) => openCardPanel(movieKey, type, elem)}
+                  onClose={closeCardPanel}
+                  onStatusChange={updateStatus}
+                  onTagsChange={updateTags}
+                  onNotesChange={updateNotes}
+                />
+              );
+            })}
+          </div>
+        )}
       </section>
     </main>
   );
