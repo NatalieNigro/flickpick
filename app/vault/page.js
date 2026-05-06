@@ -76,6 +76,11 @@ export default function VaultPage() {
     openExtraElemRef.current = null;
   }
 
+  function handleActorClick(actorName) {
+    setSearch(actorName);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   useEffect(() => {
     setMemory(getMemory());
     setTags(getTags());
@@ -180,7 +185,7 @@ export default function VaultPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by title..."
+            placeholder="Search by title or actor..."
             style={{
               flex: "1",
               minWidth: "200px",
@@ -263,6 +268,7 @@ export default function VaultPage() {
                   onStatusChange={updateStatus}
                   onTagsChange={updateTags}
                   onNotesChange={updateNotes}
+                  onActorClick={handleActorClick}
                 />
               );
             })}

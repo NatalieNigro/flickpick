@@ -20,6 +20,7 @@ export default function VaultMovieCard({
   onStatusChange,
   onTagsChange,
   onNotesChange,
+  onActorClick,
 }) {
   const [notes, setNotes] = useState(movie.notes || "");
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -263,12 +264,14 @@ export default function VaultMovieCard({
                   {movie.actors.split(", ").map((actor) => (
                     <span
                       key={actor}
+                      onClick={() => onActorClick(actor)}
                       style={{
                         padding: "2px 8px",
                         borderRadius: "999px",
                         background: "#e5e7eb",
                         fontSize: "11px",
                         color: "#222",
+                        cursor: "pointer",
                       }}
                     >
                       {actor}
