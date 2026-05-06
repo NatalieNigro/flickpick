@@ -102,9 +102,14 @@ export default function VaultPage() {
   }
 
   const displayed = memory
-    .filter((m) =>
-      !search || m.title.toLowerCase().includes(search.toLowerCase())
-    )
+    .filter((m) => {
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return (
+        m.title.toLowerCase().includes(q) ||
+        (m.actors || "").toLowerCase().includes(q)
+      );
+    })
     .filter((m) => statusFilter === "all" || m.status === statusFilter)
     .filter(
       (m) => tagFilter === "all" || (m.tagIds || []).includes(tagFilter)

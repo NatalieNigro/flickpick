@@ -22,6 +22,7 @@ export default function VaultMovieCard({
   onNotesChange,
 }) {
   const [notes, setNotes] = useState(movie.notes || "");
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const tagSelectorRef = useRef(null);
   const notesRef = useRef(null);
@@ -161,7 +162,7 @@ export default function VaultMovieCard({
       </div>
 
       {/* Notes section */}
-      <div style={{ padding: `${hasTags ? 0 : 10}px 16px 14px` }}>
+      <div style={{ padding: `${hasTags ? 0 : 10}px 16px 8px` }}>
         <span ref={notesRef} style={{ display: "inline-block" }}>
           <button
             onClick={handleNotesToggle}
@@ -201,6 +202,47 @@ export default function VaultMovieCard({
               lineHeight: "1.5",
             }}
           />
+        )}
+      </div>
+
+      {/* Details section */}
+      <div style={{ padding: "0 16px 14px" }}>
+        <button
+          onClick={() => setDetailsOpen((prev) => !prev)}
+          style={{
+            padding: "4px 10px",
+            borderRadius: "999px",
+            border: detailsOpen ? "2px solid #5b21b6" : "1px solid #ddd",
+            background: detailsOpen ? "#ede9fe" : "#fff",
+            fontWeight: detailsOpen ? "700" : "500",
+            fontSize: "12px",
+            cursor: "pointer",
+          }}
+        >
+          {detailsOpen ? "▲ Details" : "▼ Details"}
+        </button>
+
+        {detailsOpen && (
+          <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
+            {movie.why && (
+              <div style={{ fontSize: "13px", lineHeight: "1.5", color: "#444" }}>
+                <strong style={{ color: "#222", display: "block", marginBottom: "2px" }}>FlickPick's Take</strong>
+                {movie.why}
+              </div>
+            )}
+            {movie.plot && (
+              <div style={{ fontSize: "13px", lineHeight: "1.5", color: "#444" }}>
+                <strong style={{ color: "#222", display: "block", marginBottom: "2px" }}>Plot</strong>
+                {movie.plot}
+              </div>
+            )}
+            {movie.actors && movie.actors !== "Actors unavailable" && (
+              <div style={{ fontSize: "13px", lineHeight: "1.5", color: "#444" }}>
+                <strong style={{ color: "#222", display: "block", marginBottom: "2px" }}>Actors</strong>
+                {movie.actors}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
