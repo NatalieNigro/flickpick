@@ -57,7 +57,6 @@ export default function MovieCard({
       style={{
         border: "1px solid #eee",
         borderRadius: "22px",
-        overflow: "hidden",
         background: "#fafafa",
         boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
         display: "flex",
@@ -75,6 +74,7 @@ export default function MovieCard({
             objectFit: "cover",
             display: "block",
             background: "#eee",
+            borderRadius: "22px 22px 0 0",
           }}
         />
       ) : (
@@ -88,6 +88,7 @@ export default function MovieCard({
             color: "#777",
             padding: "20px",
             textAlign: "center",
+            borderRadius: "22px 22px 0 0",
           }}
         >
           Poster unavailable
