@@ -206,40 +206,75 @@ export default function VaultMovieCard({
       </div>
 
       {/* Details section */}
-      <div style={{ padding: "0 16px 14px" }}>
+      <div style={{ borderTop: "1px solid #ede9fe", padding: "10px 16px 14px" }}>
         <button
           onClick={() => setDetailsOpen((prev) => !prev)}
           style={{
-            padding: "4px 10px",
-            borderRadius: "999px",
-            border: detailsOpen ? "2px solid #5b21b6" : "1px solid #ddd",
-            background: detailsOpen ? "#ede9fe" : "#fff",
-            fontWeight: detailsOpen ? "700" : "500",
+            background: "none",
+            border: "none",
+            padding: 0,
+            color: "#a1a1aa",
             fontSize: "12px",
             cursor: "pointer",
+            fontFamily: "inherit",
           }}
         >
           {detailsOpen ? "▲ Details" : "▼ Details"}
         </button>
 
         {detailsOpen && (
-          <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div
+            style={{
+              marginTop: "10px",
+              background: "#f5f0ff",
+              borderRadius: "12px",
+              padding: "14px 16px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "14px",
+            }}
+          >
             {movie.why && (
-              <div style={{ fontSize: "13px", lineHeight: "1.5", color: "#444" }}>
-                <strong style={{ color: "#222", display: "block", marginBottom: "2px" }}>FlickPick's Take</strong>
-                {movie.why}
+              <div>
+                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#9ca3af", marginBottom: "6px" }}>
+                  FlickPick's Take
+                </div>
+                <div style={{ borderLeft: "3px solid #7c3aed", paddingLeft: "12px", fontStyle: "italic", color: "#555", lineHeight: "1.6", fontSize: "13px" }}>
+                  {movie.why}
+                </div>
               </div>
             )}
             {movie.plot && (
-              <div style={{ fontSize: "13px", lineHeight: "1.5", color: "#444" }}>
-                <strong style={{ color: "#222", display: "block", marginBottom: "2px" }}>Plot</strong>
-                {movie.plot}
+              <div>
+                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#9ca3af", marginBottom: "6px" }}>
+                  Plot
+                </div>
+                <div style={{ fontSize: "12px", color: "#777", lineHeight: "1.5" }}>
+                  {movie.plot}
+                </div>
               </div>
             )}
             {movie.actors && movie.actors !== "Actors unavailable" && (
-              <div style={{ fontSize: "13px", lineHeight: "1.5", color: "#444" }}>
-                <strong style={{ color: "#222", display: "block", marginBottom: "2px" }}>Actors</strong>
-                {movie.actors}
+              <div>
+                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#9ca3af", marginBottom: "6px" }}>
+                  Actors
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {movie.actors.split(", ").map((actor) => (
+                    <span
+                      key={actor}
+                      style={{
+                        padding: "2px 8px",
+                        borderRadius: "999px",
+                        background: "#e5e7eb",
+                        fontSize: "11px",
+                        color: "#6b7280",
+                      }}
+                    >
+                      {actor}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>
