@@ -24,7 +24,7 @@ const TagSelector = forwardRef(function TagSelector(
   const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
 
   return (
-    <div ref={ref} style={{ position: "relative", alignSelf: "flex-start" }}>
+    <>
       {selectedTags.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
           {selectedTags.map((tag) => (
@@ -44,69 +44,75 @@ const TagSelector = forwardRef(function TagSelector(
         </div>
       )}
 
-      <button
-        onClick={onToggle}
-        style={{
-          padding: "6px 10px",
-          borderRadius: "999px",
-          border: "1px solid #ddd",
-          background: "#ffffff",
-          fontSize: "13px",
-          cursor: "pointer",
-        }}
+      {/* ref covers only the button + dropdown, not the badges above */}
+      <div
+        ref={ref}
+        style={{ display: "inline-block", position: "relative", alignSelf: "flex-start" }}
       >
-        + Add Tag
-      </button>
-
-      {open && (
-        <div
+        <button
+          onClick={onToggle}
           style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            marginTop: "6px",
+            padding: "6px 10px",
+            borderRadius: "999px",
             border: "1px solid #ddd",
-            borderRadius: "12px",
-            padding: "8px",
-            background: "#fff",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
-            maxHeight: "160px",
-            overflowY: "auto",
-            zIndex: 10,
-            minWidth: "160px",
+            background: "#ffffff",
+            fontSize: "13px",
+            cursor: "pointer",
           }}
         >
-          {tags.map((tag) => {
-            const isSelected = selectedTagIds.includes(tag.id);
-            return (
-              <div
-                key={tag.id}
-                onClick={() => toggleTag(tag.id)}
-                style={{
-                  padding: "4px 6px",
-                  borderRadius: "8px",
-                  background: "transparent",
-                  cursor: "pointer",
-                }}
-              >
-                <span
+          + Add Tag
+        </button>
+
+        {open && (
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              marginTop: "6px",
+              border: "1px solid #ddd",
+              borderRadius: "12px",
+              padding: "8px",
+              background: "#fff",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
+              maxHeight: "160px",
+              overflowY: "auto",
+              zIndex: 10,
+              minWidth: "160px",
+            }}
+          >
+            {tags.map((tag) => {
+              const isSelected = selectedTagIds.includes(tag.id);
+              return (
+                <div
+                  key={tag.id}
+                  onClick={() => toggleTag(tag.id)}
                   style={{
-                    display: "inline-block",
-                    padding: "3px 10px",
-                    borderRadius: "999px",
-                    background: tag.color,
-                    fontSize: "12px",
-                    fontWeight: "600",
+                    padding: "4px 6px",
+                    borderRadius: "8px",
+                    background: "transparent",
+                    cursor: "pointer",
                   }}
                 >
-                  {isSelected ? `✓ ${tag.name}` : tag.name}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "3px 10px",
+                      borderRadius: "999px",
+                      background: tag.color,
+                      fontSize: "12px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {isSelected ? `✓ ${tag.name}` : tag.name}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
 });
 

@@ -211,7 +211,7 @@ export default function MovieCard({
             </button>
           </div>
 
-          <div style={{ marginTop: "14px", display: "inline-block" }}>
+          <div style={{ marginTop: "14px" }}>
             <TagSelector
               ref={tagSelectorRef}
               selectedTagIds={selectedTagIds}
