@@ -231,32 +231,32 @@ export default function VaultMovieCard({
               padding: "14px 16px",
               display: "flex",
               flexDirection: "column",
-              gap: "14px",
+              gap: "20px",
             }}
           >
             {movie.why && (
               <div>
-                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#6b7280", marginBottom: "6px" }}>
+                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#5b21b6", marginBottom: "6px" }}>
                   FlickPick's Take
                 </div>
-                <div style={{ borderLeft: "3px solid #7c3aed", paddingLeft: "12px", fontStyle: "italic", color: "#555", lineHeight: "1.6", fontSize: "13px" }}>
+                <div style={{ borderLeft: "3px solid #7c3aed", paddingLeft: "12px", fontStyle: "italic", color: "#111", lineHeight: "1.6", fontSize: "13px" }}>
                   {movie.why}
                 </div>
               </div>
             )}
             {movie.plot && (
               <div>
-                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#6b7280", marginBottom: "6px" }}>
+                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#5b21b6", marginBottom: "6px" }}>
                   Plot
                 </div>
-                <div style={{ fontSize: "12px", color: "#777", lineHeight: "1.5" }}>
+                <div style={{ fontSize: "12px", color: "#222", lineHeight: "1.5" }}>
                   {movie.plot}
                 </div>
               </div>
             )}
             {movie.actors && movie.actors !== "Actors unavailable" && (
               <div>
-                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#6b7280", marginBottom: "6px" }}>
+                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#5b21b6", marginBottom: "6px" }}>
                   Actors
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -268,7 +268,7 @@ export default function VaultMovieCard({
                         borderRadius: "999px",
                         background: "#e5e7eb",
                         fontSize: "11px",
-                        color: "#6b7280",
+                        color: "#222",
                       }}
                     >
                       {actor}
