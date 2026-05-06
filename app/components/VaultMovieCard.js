@@ -213,7 +213,7 @@ export default function VaultMovieCard({
             background: "none",
             border: "none",
             padding: 0,
-            color: "#a1a1aa",
+            color: "#111",
             fontSize: "12px",
             cursor: "pointer",
             fontFamily: "inherit",
@@ -226,7 +226,7 @@ export default function VaultMovieCard({
           <div
             style={{
               marginTop: "10px",
-              background: "#f5f0ff",
+              background: "#faf7ff",
               borderRadius: "12px",
               padding: "14px 16px",
               display: "flex",
@@ -236,7 +236,7 @@ export default function VaultMovieCard({
           >
             {movie.why && (
               <div>
-                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#9ca3af", marginBottom: "6px" }}>
+                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#6b7280", marginBottom: "6px" }}>
                   FlickPick's Take
                 </div>
                 <div style={{ borderLeft: "3px solid #7c3aed", paddingLeft: "12px", fontStyle: "italic", color: "#555", lineHeight: "1.6", fontSize: "13px" }}>
@@ -246,7 +246,7 @@ export default function VaultMovieCard({
             )}
             {movie.plot && (
               <div>
-                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#9ca3af", marginBottom: "6px" }}>
+                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#6b7280", marginBottom: "6px" }}>
                   Plot
                 </div>
                 <div style={{ fontSize: "12px", color: "#777", lineHeight: "1.5" }}>
@@ -256,7 +256,7 @@ export default function VaultMovieCard({
             )}
             {movie.actors && movie.actors !== "Actors unavailable" && (
               <div>
-                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#9ca3af", marginBottom: "6px" }}>
+                <div style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#6b7280", marginBottom: "6px" }}>
                   Actors
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
