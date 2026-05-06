@@ -42,14 +42,18 @@ export default function VaultPage() {
   // Tracks which card has an open panel and holds a ref to that panel's DOM element.
   // Only one panel can be open at a time across all cards.
   const [openPanel, setOpenPanel] = useState(null); // { movieKey, type: "tag"|"notes" }
-  const openElemRef = useRef(null);
+  const openElemRef = useRef(null);      // primary element (button / tag trigger)
+  const openExtraElemRef = useRef(null); // secondary element (notes textarea)
 
   useEffect(() => {
     if (!openPanel) return;
     function handleMouseDown(e) {
-      if (openElemRef.current && !openElemRef.current.contains(e.target)) {
+      const inPrimary = openElemRef.current?.contains(e.target);
+      const inExtra   = openExtraElemRef.current?.contains(e.target);
+      if (!inPrimary && !inExtra) {
         setOpenPanel(null);
         openElemRef.current = null;
+        openExtraElemRef.current = null;
       }
     }
     document.addEventListener("mousedown", handleMouseDown);
@@ -58,12 +62,18 @@ export default function VaultPage() {
 
   function openCardPanel(movieKey, type, elem) {
     openElemRef.current = elem;
+    openExtraElemRef.current = null;
     setOpenPanel({ movieKey, type });
+  }
+
+  function registerExtraElem(elem) {
+    openExtraElemRef.current = elem;
   }
 
   function closeCardPanel() {
     setOpenPanel(null);
     openElemRef.current = null;
+    openExtraElemRef.current = null;
   }
 
   useEffect(() => {
@@ -244,6 +254,7 @@ export default function VaultPage() {
                   openPanel={cardOpenPanel}
                   onOpen={(type, elem) => openCardPanel(movieKey, type, elem)}
                   onClose={closeCardPanel}
+                  onRegisterExtra={registerExtraElem}
                   onStatusChange={updateStatus}
                   onTagsChange={updateTags}
                   onNotesChange={updateNotes}

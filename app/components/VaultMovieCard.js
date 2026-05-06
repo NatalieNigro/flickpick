@@ -13,9 +13,10 @@ const STATUSES = [
 
 export default function VaultMovieCard({
   movie,
-  openPanel,      // "tag" | "notes" | null — controlled by VaultPage
-  onOpen,         // (type, domElement) => void
-  onClose,        // () => void
+  openPanel,        // "tag" | "notes" | null — controlled by VaultPage
+  onOpen,           // (type, domElement) => void
+  onClose,          // () => void
+  onRegisterExtra,  // (domElement | null) => void — registers textarea with parent listener
   onStatusChange,
   onTagsChange,
   onNotesChange,
@@ -276,10 +277,10 @@ export default function VaultMovieCard({
 
         {notesOpen && (
           <textarea
+            ref={(el) => onRegisterExtra(el)}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             onBlur={handleNotesBlur}
-            onMouseDown={(e) => e.stopPropagation()}
             placeholder="Add your thoughts, reminders, or notes..."
             style={{
               display: "block",
