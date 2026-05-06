@@ -210,13 +210,15 @@ export default function MovieCard({
             </button>
           </div>
 
-          <TagSelector
-            ref={tagSelectorRef}
-            selectedTagIds={selectedTagIds}
-            open={tagOpen}
-            onToggle={() => setTagOpen((prev) => !prev)}
-            onChange={(tagIds) => updateMovieTags(movie, tagIds)}
-          />
+          <div style={{ marginTop: "14px", display: "inline-block" }}>
+            <TagSelector
+              ref={tagSelectorRef}
+              selectedTagIds={selectedTagIds}
+              open={tagOpen}
+              onToggle={() => setTagOpen((prev) => !prev)}
+              onChange={(tagIds) => updateMovieTags(movie, tagIds)}
+            />
+          </div>
         </div>
       </div>
     </div>

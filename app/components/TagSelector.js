@@ -24,8 +24,7 @@ const TagSelector = forwardRef(function TagSelector(
   const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
 
   return (
-    <div ref={ref} style={{ marginTop: "14px" }}>
-      {/* Selected tag badges */}
+    <div ref={ref} style={{ position: "relative", alignSelf: "flex-start" }}>
       {selectedTags.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
           {selectedTags.map((tag) => (
@@ -45,7 +44,6 @@ const TagSelector = forwardRef(function TagSelector(
         </div>
       )}
 
-      {/* Add Tag button */}
       <button
         onClick={onToggle}
         style={{
@@ -60,18 +58,22 @@ const TagSelector = forwardRef(function TagSelector(
         + Add Tag
       </button>
 
-      {/* Dropdown */}
       {open && (
         <div
           style={{
-            marginTop: "8px",
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            marginTop: "6px",
             border: "1px solid #ddd",
             borderRadius: "12px",
-            padding: "10px",
+            padding: "8px",
             background: "#fff",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
             maxHeight: "160px",
             overflowY: "auto",
+            zIndex: 10,
+            minWidth: "160px",
           }}
         >
           {tags.map((tag) => {
