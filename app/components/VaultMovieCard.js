@@ -202,26 +202,24 @@ export default function VaultMovieCard({
                       key={tag.id}
                       onClick={() => toggleTag(tag.id)}
                       style={{
-                        padding: "8px",
+                        padding: "4px 6px",
                         borderRadius: "8px",
-                        background: isSelected ? "#ede9fe" : "transparent",
+                        background: "transparent",
                         cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        fontSize: "13px",
                       }}
                     >
                       <span
                         style={{
-                          width: "10px",
-                          height: "10px",
-                          borderRadius: "50%",
+                          display: "inline-block",
+                          padding: "3px 10px",
+                          borderRadius: "999px",
                           background: tag.color,
-                          flexShrink: 0,
+                          fontSize: "12px",
+                          fontWeight: "600",
                         }}
-                      />
-                      {tag.name}
+                      >
+                        {isSelected ? `✓ ${tag.name}` : tag.name}
+                      </span>
                     </div>
                   );
                 })}
@@ -256,7 +254,7 @@ export default function VaultMovieCard({
       </div>
 
       {/* Notes section — outer div is for padding/layout only, not the ref */}
-      <div style={{ padding: "0 16px 14px" }}>
+      <div style={{ padding: `${selectedTags.length === 0 ? 10 : 0}px 16px 14px` }}>
         {/* ref wraps only the button so whitespace to its right triggers outside-close */}
         <span ref={notesRef} style={{ display: "inline-block" }}>
           <button
