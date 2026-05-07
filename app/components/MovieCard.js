@@ -163,7 +163,7 @@ export default function MovieCard({
               cursor: "pointer",
             }}
           >
-            {added ? "✓ Added" : "➕ Add to Pick List"}
+            {added ? "✓ Added to Picklist" : "➕ Add to Pick List"}
           </button>
 
           {/* Vault status buttons */}
