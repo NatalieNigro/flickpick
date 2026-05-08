@@ -113,6 +113,60 @@ export default function VaultPage() {
     updateMemory(memory.filter((m) => !isSame(m)));
   }
 
+  function handleExport() {
+    const STATUS_LABELS = {
+      wantToWatch: "Want to Watch",
+      notInterested: "Not Interested",
+      loved: "Loved",
+      meh: "Meh",
+      hardPass: "Hard Pass",
+    };
+
+    function cell(value) {
+      if (value == null) return "";
+      const s = String(value);
+      return s.includes(",") || s.includes('"') || s.includes("\n")
+        ? `"${s.replace(/"/g, '""')}"`
+        : s;
+    }
+
+    const headers = [
+      "Title", "Year", "Status", "Tags", "Notes",
+      "Genre", "Actors", "IMDb Rating", "FlickPick's Take",
+    ];
+
+    const rows = memory.map((m) => {
+      const tagNames = (m.tagIds || [])
+        .map((id) => tags.find((t) => t.id === id)?.name)
+        .filter(Boolean)
+        .join(";");
+
+      const actors = (m.actors || "").split(", ").join(";");
+
+      return [
+        m.title || "",
+        m.year || "",
+        STATUS_LABELS[m.status] || "",
+        tagNames,
+        m.notes || "",
+        m.genre || "",
+        actors,
+        m.imdbRating || "",
+        m.why || "",
+      ].map(cell).join(",");
+    });
+
+    const csv = [headers.map(cell).join(","), ...rows].join("\n");
+    const today = new Date().toISOString().slice(0, 10);
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `flickpick-vault-${today}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   function handleAddMovie(movie, isUpdate = false) {
     if (isUpdate) {
       const isSame = (m) => m.title === movie.title && m.year === movie.year;
@@ -247,8 +301,24 @@ export default function VaultPage() {
             </select>
           </div>
 
-          {/* Row 2: Add Movie button right-aligned */}
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+          {/* Row 2: action buttons right-aligned */}
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+            <button
+              onClick={handleExport}
+              style={{
+                padding: "10px 16px",
+                borderRadius: "12px",
+                border: "1px solid #ddd",
+                background: "white",
+                color: "#666",
+                fontWeight: "500",
+                fontSize: "14px",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              ⬇ Export Vault
+            </button>
             <button
               onClick={() => setShowAddModal(true)}
               style={{
