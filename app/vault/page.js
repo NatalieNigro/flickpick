@@ -108,6 +108,11 @@ export default function VaultPage() {
     updateMemory(memory.map((m) => (isSame(m) ? { ...m, notes } : m)));
   }
 
+  function deleteMovie(movie) {
+    const isSame = (m) => m.title === movie.title && m.year === movie.year;
+    updateMemory(memory.filter((m) => !isSame(m)));
+  }
+
   function handleAddMovie(movie, isUpdate = false) {
     if (isUpdate) {
       const isSame = (m) => m.title === movie.title && m.year === movie.year;
@@ -298,6 +303,7 @@ export default function VaultPage() {
                   onTagsChange={updateTags}
                   onNotesChange={updateNotes}
                   onActorClick={handleActorClick}
+                  onDelete={deleteMovie}
                 />
               );
             })}

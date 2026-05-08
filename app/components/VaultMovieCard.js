@@ -21,9 +21,11 @@ export default function VaultMovieCard({
   onTagsChange,
   onNotesChange,
   onActorClick,
+  onDelete,
 }) {
   const [notes, setNotes] = useState(movie.notes || "");
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   const tagSelectorRef = useRef(null);
   const notesRef = useRef(null);
@@ -64,8 +66,30 @@ export default function VaultMovieCard({
         border: "1px solid #eee",
         background: "white",
         boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+        position: "relative",
       }}
     >
+      {/* Trash button */}
+      <button
+        onClick={() => setConfirming(true)}
+        style={{
+          position: "absolute",
+          top: "10px",
+          right: "10px",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          fontSize: "15px",
+          color: "#ccc",
+          lineHeight: 1,
+          padding: "2px",
+          zIndex: 2,
+        }}
+        title="Remove from Vault"
+      >
+        🗑
+      </button>
+
       {/* Horizontal row: poster + details */}
       <div style={{ display: "flex" }}>
         {movie.poster ? (
@@ -162,6 +186,52 @@ export default function VaultMovieCard({
         </div>
       </div>
 
+      {/* Inline delete confirmation — replaces Notes/Details when active */}
+      {confirming ? (
+        <div
+          style={{
+            padding: "14px 16px",
+            borderTop: "1px solid #fee2e2",
+            background: "#fef2f2",
+            borderRadius: "0 0 16px 16px",
+          }}
+        >
+          <p style={{ margin: "0 0 12px", fontSize: "14px", color: "#991b1b", fontWeight: "500" }}>
+            Remove this movie from your Vault?
+          </p>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={() => onDelete(movie)}
+              style={{
+                padding: "6px 16px",
+                borderRadius: "999px",
+                border: "none",
+                background: "#dc2626",
+                color: "white",
+                fontWeight: "600",
+                fontSize: "13px",
+                cursor: "pointer",
+              }}
+            >
+              Remove
+            </button>
+            <button
+              onClick={() => setConfirming(false)}
+              style={{
+                padding: "6px 16px",
+                borderRadius: "999px",
+                border: "1px solid #ddd",
+                background: "white",
+                fontSize: "13px",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
       {/* Notes section */}
       <div style={{ padding: `${hasTags ? 0 : 10}px 16px 8px` }}>
         <span ref={notesRef} style={{ display: "inline-block" }}>
@@ -283,6 +353,8 @@ export default function VaultMovieCard({
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }
