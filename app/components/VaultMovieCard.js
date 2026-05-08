@@ -26,6 +26,7 @@ export default function VaultMovieCard({
   const [notes, setNotes] = useState(movie.notes || "");
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [trashHovered, setTrashHovered] = useState(false);
 
   const tagSelectorRef = useRef(null);
   const notesRef = useRef(null);
@@ -72,6 +73,9 @@ export default function VaultMovieCard({
       {/* Trash button */}
       <button
         onClick={() => setConfirming(true)}
+        onMouseEnter={() => setTrashHovered(true)}
+        onMouseLeave={() => setTrashHovered(false)}
+        title="Remove from Vault"
         style={{
           position: "absolute",
           top: "10px",
@@ -79,15 +83,23 @@ export default function VaultMovieCard({
           background: "none",
           border: "none",
           cursor: "pointer",
-          fontSize: "15px",
-          color: "#ccc",
-          lineHeight: 1,
-          padding: "2px",
+          padding: "4px",
           zIndex: 2,
+          color: trashHovered ? "#dc2626" : "#bbb",
+          lineHeight: 0,
         }}
-        title="Remove from Vault"
       >
-        🗑
+        <svg width="13" height="15" viewBox="0 0 13 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Handle */}
+          <path d="M4.5 1h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          {/* Lid */}
+          <path d="M1 3.5h11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          {/* Body */}
+          <path d="M2 3.5l1 10h7l1-10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          {/* Inner lines */}
+          <path d="M5 6.5v5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+          <path d="M8 6.5v5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+        </svg>
       </button>
 
       {/* Horizontal row: poster + details */}
