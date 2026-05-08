@@ -162,13 +162,11 @@ export default function VaultMovieCard({
           </div>
 
           {movie.importFlag && (
-            <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <span
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  padding: "2px 6px 2px 8px",
+                  display: "inline-block",
+                  padding: "2px 8px",
                   borderRadius: "999px",
                   fontSize: "11px",
                   fontWeight: "600",
@@ -178,23 +176,22 @@ export default function VaultMovieCard({
                 }}
               >
                 {movie.importFlag === "needsReview" ? "⚠️ Needs Review" : "❌ Not in OMDB"}
-                <button
-                  onClick={(e) => { e.stopPropagation(); onClearFlag(movie); }}
-                  title="Dismiss"
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "0 2px",
-                    fontSize: "13px",
-                    color: "inherit",
-                    lineHeight: 1,
-                    opacity: 0.55,
-                  }}
-                >
-                  ×
-                </button>
               </span>
+              <button
+                onClick={() => onClearFlag(movie)}
+                style={{
+                  padding: "2px 10px",
+                  borderRadius: "999px",
+                  border: "1px solid #86efac",
+                  background: "#f0fdf4",
+                  color: "#166534",
+                  fontWeight: "600",
+                  fontSize: "11px",
+                  cursor: "pointer",
+                }}
+              >
+                ✓ Looks Good
+              </button>
             </div>
           )}
 

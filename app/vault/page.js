@@ -42,6 +42,7 @@ export default function VaultPage() {
   const [sort, setSort] = useState("titleAZ");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [reviewFilter, setReviewFilter] = useState(false);
 
   // Tracks which card has an open panel and holds a ref to that panel's DOM element.
   // Only one panel can be open at a time across all cards.
@@ -188,6 +189,9 @@ export default function VaultPage() {
     setShowAddModal(false);
   }
 
+  const flaggedCount = memory.filter((m) => m.importFlag).length;
+  const activeReviewFilter = reviewFilter && flaggedCount > 0;
+
   const displayed = memory
     .filter((m) => {
       if (!search) return true;
@@ -198,9 +202,8 @@ export default function VaultPage() {
       );
     })
     .filter((m) => statusFilter === "all" || m.status === statusFilter)
-    .filter(
-      (m) => tagFilter === "all" || (m.tagIds || []).includes(tagFilter)
-    )
+    .filter((m) => tagFilter === "all" || (m.tagIds || []).includes(tagFilter))
+    .filter((m) => !activeReviewFilter || m.importFlag)
     .sort((a, b) => {
       switch (sort) {
         case "titleAZ":
@@ -364,6 +367,25 @@ export default function VaultPage() {
               >
                 ⬆ Import Movies
               </button>
+
+              {flaggedCount > 0 && (
+                <button
+                  onClick={() => setReviewFilter((prev) => !prev)}
+                  style={{
+                    padding: "10px 16px",
+                    borderRadius: "12px",
+                    border: activeReviewFilter ? "2px solid #d97706" : "1px solid #fde68a",
+                    background: activeReviewFilter ? "#fffbeb" : "white",
+                    color: activeReviewFilter ? "#92400e" : "#b45309",
+                    fontWeight: activeReviewFilter ? "700" : "500",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  ⚠️ Needs Review ({flaggedCount})
+                </button>
+              )}
             </div>
           </div>
         </div>
