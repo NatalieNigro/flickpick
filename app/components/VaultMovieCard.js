@@ -23,6 +23,7 @@ export default function VaultMovieCard({
   onActorClick,
   onDelete,
   onClearFlag,
+  onEdit,
 }) {
   const [notes, setNotes] = useState(movie.notes || "");
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -160,40 +161,6 @@ export default function VaultMovieCard({
               <span style={{ color: "#888", fontSize: "13px" }}>⭐ {movie.imdbRating}</span>
             )}
           </div>
-
-          {movie.importFlag && (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-              <span
-                style={{
-                  display: "inline-block",
-                  padding: "2px 8px",
-                  borderRadius: "999px",
-                  fontSize: "11px",
-                  fontWeight: "600",
-                  background: movie.importFlag === "needsReview" ? "#fffbeb" : "#fef2f2",
-                  color: movie.importFlag === "needsReview" ? "#92400e" : "#991b1b",
-                  border: `1px solid ${movie.importFlag === "needsReview" ? "#fde68a" : "#fecaca"}`,
-                }}
-              >
-                {movie.importFlag === "needsReview" ? "⚠️ Needs Review" : "❌ Not in OMDB"}
-              </span>
-              <button
-                onClick={() => onClearFlag(movie)}
-                style={{
-                  padding: "2px 10px",
-                  borderRadius: "999px",
-                  border: "1px solid #86efac",
-                  background: "#f0fdf4",
-                  color: "#166534",
-                  fontWeight: "600",
-                  fontSize: "11px",
-                  cursor: "pointer",
-                }}
-              >
-                ✓ Looks Good
-              </button>
-            </div>
-          )}
 
           {movie.genre && (
             <div style={{ color: "#666", fontSize: "13px" }}>{movie.genre}</div>
@@ -400,6 +367,94 @@ export default function VaultMovieCard({
           </div>
         )}
       </div>
+
+      {/* Review section — only on flagged movies */}
+      {movie.importFlag && (
+        <div
+          style={{
+            borderTop: "1px solid #ede9fe",
+            background: "#faf7ff",
+            padding: "14px 16px 16px",
+            borderRadius: "0 0 16px 16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+          }}
+        >
+          {/* Row 1: Review Reason */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+            <span style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#5b21b6", whiteSpace: "nowrap" }}>
+              Review Reason
+            </span>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "2px 8px",
+                borderRadius: "999px",
+                fontSize: "11px",
+                fontWeight: "600",
+                background: movie.importFlag === "needsReview" ? "#fffbeb" : "#fef2f2",
+                color: movie.importFlag === "needsReview" ? "#92400e" : "#991b1b",
+                border: `1px solid ${movie.importFlag === "needsReview" ? "#fde68a" : "#fecaca"}`,
+              }}
+            >
+              {movie.importFlag === "needsReview" ? "⚠️ Auto-matched" : "❌ Not in OMDB"}
+            </span>
+          </div>
+
+          {/* Row 2: How to Resolve */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+            <span style={{ fontSize: "10px", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", color: "#5b21b6", whiteSpace: "nowrap" }}>
+              How to Resolve
+            </span>
+            <button
+              onClick={() => onClearFlag(movie)}
+              style={{
+                padding: "5px 12px",
+                borderRadius: "999px",
+                border: "1px solid #86efac",
+                background: "#f0fdf4",
+                color: "#166534",
+                fontWeight: "600",
+                fontSize: "12px",
+                cursor: "pointer",
+              }}
+            >
+              ✓ Looks Good
+            </button>
+            <button
+              onClick={() => onEdit(movie)}
+              style={{
+                padding: "5px 12px",
+                borderRadius: "999px",
+                border: "1px solid #c4b5fd",
+                background: "#ede9fe",
+                color: "#5b21b6",
+                fontWeight: "600",
+                fontSize: "12px",
+                cursor: "pointer",
+              }}
+            >
+              ✏️ Edit
+            </button>
+            <button
+              onClick={() => onDelete(movie)}
+              style={{
+                padding: "5px 12px",
+                borderRadius: "999px",
+                border: "1px solid #fecaca",
+                background: "#fef2f2",
+                color: "#dc2626",
+                fontWeight: "600",
+                fontSize: "12px",
+                cursor: "pointer",
+              }}
+            >
+              🗑 Delete
+            </button>
+          </div>
+        </div>
+      )}
         </>
       )}
     </div>

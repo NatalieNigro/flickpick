@@ -29,9 +29,9 @@ const inputStyle = {
   fontFamily: "inherit",
 };
 
-export default function AddMovieModal({ memory, onSave, onClose }) {
-  const [title, setTitle] = useState("");
-  const [year, setYear] = useState("");
+export default function AddMovieModal({ memory, onSave, onClose, initialTitle = "", initialYear = "", editingMovie = null }) {
+  const [title, setTitle] = useState(initialTitle);
+  const [year, setYear] = useState(initialYear);
   const [status, setStatus] = useState(null);
   const [tagIds, setTagIds] = useState([]);
   const [notes, setNotes] = useState("");
@@ -125,7 +125,8 @@ export default function AddMovieModal({ memory, onSave, onClose }) {
       };
 
       const alreadyExists = memory.some(
-        (m) => m.title === movie.title && m.year === movie.year
+        (m) => m.title === movie.title && m.year === movie.year &&
+               !(editingMovie?.title === m.title && editingMovie?.year === m.year)
       );
 
       if (alreadyExists) {

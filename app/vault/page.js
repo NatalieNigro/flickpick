@@ -43,6 +43,7 @@ export default function VaultPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [reviewFilter, setReviewFilter] = useState(false);
+  const [editMovie, setEditMovie] = useState(null);
 
   // Tracks which card has an open panel and holds a ref to that panel's DOM element.
   // Only one panel can be open at a time across all cards.
@@ -180,13 +181,18 @@ export default function VaultPage() {
   }
 
   function handleAddMovie(movie, isUpdate = false) {
-    if (isUpdate) {
+    if (editMovie) {
+      // Replace the flagged entry (matched by its original title+year) with corrected data
+      const isSame = (m) => m.title === editMovie.title && m.year === editMovie.year;
+      updateMemory(memory.map((m) => (isSame(m) ? { ...m, ...movie, importFlag: null } : m)));
+    } else if (isUpdate) {
       const isSame = (m) => m.title === movie.title && m.year === movie.year;
-      updateMemory(memory.map((m) => (isSame(m) ? { ...m, ...movie } : m)));
+      updateMemory(memory.map((m) => (isSame(m) ? { ...m, ...movie, importFlag: null } : m)));
     } else {
       updateMemory([...memory, movie]);
     }
     setShowAddModal(false);
+    setEditMovie(null);
   }
 
   const flaggedCount = memory.filter((m) => m.importFlag).length;
@@ -427,6 +433,7 @@ export default function VaultPage() {
                   onActorClick={handleActorClick}
                   onDelete={deleteMovie}
                   onClearFlag={clearImportFlag}
+                  onEdit={setEditMovie}
                 />
               );
             })}
@@ -435,11 +442,14 @@ export default function VaultPage() {
       </section>
     </main>
 
-    {showAddModal && (
+    {(showAddModal || editMovie) && (
       <AddMovieModal
         memory={memory}
         onSave={handleAddMovie}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => { setShowAddModal(false); setEditMovie(null); }}
+        initialTitle={editMovie?.title}
+        initialYear={editMovie?.year}
+        editingMovie={editMovie}
       />
     )}
     {showImportModal && (
