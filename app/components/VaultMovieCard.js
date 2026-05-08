@@ -514,9 +514,9 @@ export default function VaultMovieCard({
               style={{
                 padding: "5px 12px",
                 borderRadius: "999px",
-                border: "none",
-                background: "#5b21b6",
-                color: "white",
+                border: "1px solid #c4b5fd",
+                background: "#ede9fe",
+                color: "#5b21b6",
                 fontWeight: "600",
                 fontSize: "12px",
                 cursor: "pointer",
