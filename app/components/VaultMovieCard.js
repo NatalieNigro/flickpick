@@ -24,11 +24,38 @@ export default function VaultMovieCard({
   onDelete,
   onClearFlag,
   onEdit,
+  onPickVersion,
 }) {
   const [notes, setNotes] = useState(movie.notes || "");
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [trashHovered, setTrashHovered] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const [pickLoading, setPickLoading] = useState(false);
+
+  async function handlePickVersion(imdbId) {
+    setPickLoading(true);
+    try {
+      const res = await fetch(`/api/omdb?i=${encodeURIComponent(imdbId)}&plot=full`);
+      const data = await res.json();
+      if (data.Response !== "False") {
+        onPickVersion(movie, {
+          title: data.Title,
+          year: data.Year,
+          poster: data.Poster !== "N/A" ? data.Poster : "",
+          genre: data.Genre || "",
+          actors: data.Actors || "",
+          plot: data.Plot || "",
+          imdbRating: data.imdbRating || "",
+          omdbFound: true,
+        });
+        setPicking(false);
+      }
+    } catch {
+      // stay in picking mode on error
+    }
+    setPickLoading(false);
+  }
 
   const tagSelectorRef = useRef(null);
   const notesRef = useRef(null);
@@ -200,8 +227,62 @@ export default function VaultMovieCard({
         </div>
       </div>
 
-      {/* Inline delete confirmation — replaces Notes/Details when active */}
-      {confirming ? (
+      {/* Version picker — replaces all bottom sections when active */}
+      {picking ? (
+        <div
+          style={{
+            borderTop: "1px solid #ede9fe",
+            background: "#faf7ff",
+            borderRadius: "0 0 16px 16px",
+            padding: "14px 16px 16px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+            <span style={{ fontSize: "12px", fontWeight: "600", color: "#5b21b6" }}>
+              Select the correct version:
+            </span>
+            <button
+              onClick={() => setPicking(false)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: "13px", padding: 0, lineHeight: 1 }}
+            >
+              Cancel
+            </button>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxHeight: "220px", overflowY: "auto" }}>
+            {(movie.omdbAlternatives || []).map((result) => (
+              <button
+                key={result.imdbID}
+                onClick={() => handlePickVersion(result.imdbID)}
+                disabled={pickLoading}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "8px 10px",
+                  borderRadius: "10px",
+                  border: "1px solid #e5e7eb",
+                  background: pickLoading ? "#f9fafb" : "white",
+                  cursor: pickLoading ? "wait" : "pointer",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                {result.Poster && result.Poster !== "N/A" ? (
+                  <img src={result.Poster} alt="" style={{ width: "30px", height: "44px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: "30px", height: "44px", background: "#e5e7eb", borderRadius: "4px", flexShrink: 0 }} />
+                )}
+                <div>
+                  <div style={{ fontWeight: "600", fontSize: "13px", color: "#111" }}>{result.Title}</div>
+                  <div style={{ fontSize: "11px", color: "#888", marginTop: "2px" }}>
+                    {result.Year} · {result.Type === "movie" ? "Movie" : result.Type === "series" ? "TV Series" : result.Type}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : confirming ? (
         <div
           style={{
             padding: "14px 16px",
@@ -398,7 +479,7 @@ export default function VaultMovieCard({
                 border: `1px solid ${movie.importFlag === "needsReview" ? "#fde68a" : "#fecaca"}`,
               }}
             >
-              {movie.importFlag === "needsReview" ? "⚠️ Auto-matched" : "❌ Not in OMDB"}
+              {movie.importFlag === "needsReview" ? "⚠️ Multiple versions exist... verify we have the right one" : "❌ Not in OMDB"}
             </span>
           </div>
 
@@ -423,7 +504,13 @@ export default function VaultMovieCard({
               ✓ Looks Good
             </button>
             <button
-              onClick={() => onEdit(movie)}
+              onClick={() => {
+                if (movie.importFlag === "needsReview" && movie.omdbAlternatives?.length) {
+                  setPicking(true);
+                } else {
+                  onEdit(movie);
+                }
+              }}
               style={{
                 padding: "5px 12px",
                 borderRadius: "999px",

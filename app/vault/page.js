@@ -122,6 +122,17 @@ export default function VaultPage() {
     updateMemory(memory.map((m) => (isSame(m) ? { ...m, importFlag: null } : m)));
   }
 
+  function pickVersion(movie, newMetadata) {
+    const isSame = (m) => m.title === movie.title && m.year === movie.year;
+    updateMemory(
+      memory.map((m) =>
+        isSame(m)
+          ? { ...m, ...newMetadata, importFlag: null, omdbAlternatives: null }
+          : m
+      )
+    );
+  }
+
   function handleImport(movies) {
     updateMemory([...memory, ...movies]);
   }
@@ -434,6 +445,7 @@ export default function VaultPage() {
                   onDelete={deleteMovie}
                   onClearFlag={clearImportFlag}
                   onEdit={setEditMovie}
+                  onPickVersion={pickVersion}
                 />
               );
             })}
