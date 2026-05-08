@@ -101,7 +101,7 @@ export default function AddMovieModal({ memory, onSave, onClose }) {
     setError(null);
 
     try {
-      const res = await fetch(`/api/omdb?i=${imdbId}`);
+      const res = await fetch(`/api/omdb?i=${imdbId}&plot=full`);
       const data = await res.json();
 
       if (data.Response === "False") {

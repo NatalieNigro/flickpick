@@ -88,6 +88,7 @@ Movies the user marked hard pass: ${hardPass}`,
     const params = new URLSearchParams({
       t: movie.title,
       y: movie.year,
+      plot: "full",
       apikey: process.env.OMDB_API_KEY,
     });
 
