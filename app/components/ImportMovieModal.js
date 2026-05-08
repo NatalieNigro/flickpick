@@ -82,6 +82,7 @@ async function resolveMovie(title, year, status, tagIds, notes) {
 
   let imdbId = null;
   let needsReview = false;
+  let omdbAlternatives = null;
 
   if (searchData.Response === "False") {
     const direct = await omdbDetail(title, false, year);
@@ -99,8 +100,10 @@ async function resolveMovie(title, year, status, tagIds, notes) {
       const match = results.find((r) => r.Year === year || r.Year.startsWith(year));
       imdbId = (match || results[0]).imdbID;
     } else {
+      // Multiple results, no year — auto-pick first but flag for review and store all options
       imdbId = results[0].imdbID;
       needsReview = true;
+      omdbAlternatives = results;
     }
   }
 
@@ -121,6 +124,7 @@ async function resolveMovie(title, year, status, tagIds, notes) {
       imdbRating: detail.imdbRating || "",
       omdbFound: true,
       importFlag: needsReview ? "needsReview" : null,
+      omdbAlternatives,
       status, tagIds, notes,
     },
   };

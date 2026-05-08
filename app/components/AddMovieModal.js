@@ -41,7 +41,8 @@ export default function AddMovieModal({ memory, onSave, onClose, initialTitle = 
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [searchResults, setSearchResults] = useState(null);
+  const [searchResults, setSearchResults] = useState(editingMovie?.omdbAlternatives || null);
+  const [isAlternativesMode, setIsAlternativesMode] = useState(!!(editingMovie?.omdbAlternatives));
   const [duplicateOf, setDuplicateOf] = useState(null);
 
   // Lock background scroll while modal is open
@@ -175,7 +176,7 @@ export default function AddMovieModal({ memory, onSave, onClose, initialTitle = 
       >
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-          <h2 style={{ margin: 0, fontSize: "22px" }}>Add Movie to Vault</h2>
+          <h2 style={{ margin: 0, fontSize: "22px" }}>{isAlternativesMode ? "Select Correct Version" : "Add Movie to Vault"}</h2>
           <button
             onClick={onClose}
             style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#888", padding: "4px", lineHeight: 1 }}
@@ -184,6 +185,9 @@ export default function AddMovieModal({ memory, onSave, onClose, initialTitle = 
           </button>
         </div>
 
+        {/* Search form — hidden when showing pre-loaded alternatives */}
+        {!isAlternativesMode && (
+          <>
         {/* Title */}
         <div style={{ marginBottom: "16px" }}>
           <label style={labelStyle}>
@@ -273,6 +277,8 @@ export default function AddMovieModal({ memory, onSave, onClose, initialTitle = 
             }}
           />
         </div>
+          </>
+        )}
 
         {/* Error */}
         {error && (
@@ -294,9 +300,23 @@ export default function AddMovieModal({ memory, onSave, onClose, initialTitle = 
         {/* Search results picker */}
         {searchResults && (
           <div style={{ marginBottom: "20px" }}>
-            <p style={{ margin: "0 0 10px", fontSize: "13px", color: "#666" }}>
-              {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} found — select the right one:
-            </p>
+            {isAlternativesMode ? (
+              <div style={{ marginBottom: "10px" }}>
+                <p style={{ margin: "0 0 6px", fontSize: "13px", color: "#666" }}>
+                  Multiple versions were found during import — select the correct one:
+                </p>
+                <button
+                  onClick={() => { setSearchResults(null); setIsAlternativesMode(false); }}
+                  style={{ background: "none", border: "none", padding: 0, fontSize: "12px", color: "#5b21b6", cursor: "pointer", textDecoration: "underline" }}
+                >
+                  Search manually instead
+                </button>
+              </div>
+            ) : (
+              <p style={{ margin: "0 0 10px", fontSize: "13px", color: "#666" }}>
+                {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} found — select the right one:
+              </p>
+            )}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "260px", overflowY: "auto" }}>
               {searchResults.map((result) => (
                 <button
