@@ -187,8 +187,9 @@ export default function VaultPage() {
         </p>
 
         {/* Filter / search bar */}
-        <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "20px" }}>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", flex: 1 }}>
+        <div style={{ marginBottom: "20px" }}>
+          {/* Row 1: filters */}
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -241,23 +242,25 @@ export default function VaultPage() {
             </select>
           </div>
 
-          <button
-            onClick={() => setShowAddModal(true)}
-            style={{
-              padding: "10px 16px",
-              borderRadius: "12px",
-              border: "none",
-              background: "#5b21b6",
-              color: "white",
-              fontWeight: "600",
-              fontSize: "14px",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-            }}
-          >
-            + Add Movie
-          </button>
+          {/* Row 2: Add Movie button right-aligned */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+            <button
+              onClick={() => setShowAddModal(true)}
+              style={{
+                padding: "10px 16px",
+                borderRadius: "12px",
+                border: "none",
+                background: "#5b21b6",
+                color: "white",
+                fontWeight: "600",
+                fontSize: "14px",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              + Add Movie
+            </button>
+          </div>
         </div>
 
         {/* Result count */}
