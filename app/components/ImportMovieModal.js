@@ -362,8 +362,7 @@ export default function ImportMovieModal({ memory, onImport, onClose }) {
 
             {(summary.needsReview.length > 0 || summary.notFound.length > 0) && (
               <p style={{ fontSize: "13px", color: "#666", marginBottom: "20px", lineHeight: "1.5" }}>
-                Look for the <strong style={{ color: "#92400e" }}>⚠️ Needs Review</strong> and{" "}
-                <strong style={{ color: "#991b1b" }}>❌ Not in OMDB</strong> badges in your Vault to find and correct these movies.
+                Use the <strong style={{ color: "#92400e" }}>⚠️ Needs Review</strong> filter in your Vault to find and correct these movies, or easily delete them.
               </p>
             )}
 
