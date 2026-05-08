@@ -522,7 +522,7 @@ export default function VaultMovieCard({
                 cursor: "pointer",
               }}
             >
-              ✏️ Edit
+              🔧 Fix It
             </button>
             <button
               onClick={() => onDelete(movie)}
