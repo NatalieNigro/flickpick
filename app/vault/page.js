@@ -5,6 +5,7 @@ import { getMemory, saveMemory } from "../utils/memory";
 import { getTags } from "../utils/tags";
 import VaultMovieCard from "../components/VaultMovieCard";
 import AddMovieModal from "../components/AddMovieModal";
+import ImportMovieModal from "../components/ImportMovieModal";
 
 const STATUS_OPTIONS = [
   { key: "all", label: "All Statuses" },
@@ -40,6 +41,7 @@ export default function VaultPage() {
   const [tagFilter, setTagFilter] = useState("all");
   const [sort, setSort] = useState("titleAZ");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Tracks which card has an open panel and holds a ref to that panel's DOM element.
   // Only one panel can be open at a time across all cards.
@@ -111,6 +113,15 @@ export default function VaultPage() {
   function deleteMovie(movie) {
     const isSame = (m) => m.title === movie.title && m.year === movie.year;
     updateMemory(memory.filter((m) => !isSame(m)));
+  }
+
+  function clearImportFlag(movie) {
+    const isSame = (m) => m.title === movie.title && m.year === movie.year;
+    updateMemory(memory.map((m) => (isSame(m) ? { ...m, importFlag: null } : m)));
+  }
+
+  function handleImport(movies) {
+    updateMemory([...memory, ...movies]);
   }
 
   function handleExport() {
@@ -337,6 +348,22 @@ export default function VaultPage() {
               >
                 ⬇ Export Vault
               </button>
+              <button
+                onClick={() => setShowImportModal(true)}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "12px",
+                  border: "1px solid #ddd",
+                  background: "white",
+                  color: "#666",
+                  fontWeight: "500",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ⬆ Import Movies
+              </button>
             </div>
           </div>
         </div>
@@ -377,6 +404,7 @@ export default function VaultPage() {
                   onNotesChange={updateNotes}
                   onActorClick={handleActorClick}
                   onDelete={deleteMovie}
+                  onClearFlag={clearImportFlag}
                 />
               );
             })}
@@ -390,6 +418,13 @@ export default function VaultPage() {
         memory={memory}
         onSave={handleAddMovie}
         onClose={() => setShowAddModal(false)}
+      />
+    )}
+    {showImportModal && (
+      <ImportMovieModal
+        memory={memory}
+        onImport={handleImport}
+        onClose={() => setShowImportModal(false)}
       />
     )}
     </>
