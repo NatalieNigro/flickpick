@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { getMemory, saveMemory } from "../utils/memory";
 import { getTags } from "../utils/tags";
 import VaultMovieCard from "../components/VaultMovieCard";
+import AddMovieModal from "../components/AddMovieModal";
 
 const STATUS_OPTIONS = [
   { key: "all", label: "All Statuses" },
@@ -38,6 +39,7 @@ export default function VaultPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [tagFilter, setTagFilter] = useState("all");
   const [sort, setSort] = useState("titleAZ");
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Tracks which card has an open panel and holds a ref to that panel's DOM element.
   // Only one panel can be open at a time across all cards.
@@ -106,6 +108,16 @@ export default function VaultPage() {
     updateMemory(memory.map((m) => (isSame(m) ? { ...m, notes } : m)));
   }
 
+  function handleAddMovie(movie, isUpdate = false) {
+    if (isUpdate) {
+      const isSame = (m) => m.title === movie.title && m.year === movie.year;
+      updateMemory(memory.map((m) => (isSame(m) ? { ...m, ...movie } : m)));
+    } else {
+      updateMemory([...memory, movie]);
+    }
+    setShowAddModal(false);
+  }
+
   const displayed = memory
     .filter((m) => {
       if (!search) return true;
@@ -140,6 +152,7 @@ export default function VaultPage() {
     });
 
   return (
+    <>
     <main
       style={{
         minHeight: "100vh",
@@ -174,64 +187,77 @@ export default function VaultPage() {
         </p>
 
         {/* Filter / search bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            flexWrap: "wrap",
-            marginBottom: "20px",
-          }}
-        >
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by title or actor..."
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "20px" }}>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", flex: 1 }}>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by title or actor..."
+              style={{
+                flex: "1",
+                minWidth: "200px",
+                padding: "10px 14px",
+                borderRadius: "12px",
+                border: "1px solid #ddd",
+                fontSize: "14px",
+              }}
+            />
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={selectStyle}
+            >
+              {STATUS_OPTIONS.map((o) => (
+                <option key={o.key} value={o.key}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={tagFilter}
+              onChange={(e) => setTagFilter(e.target.value)}
+              style={selectStyle}
+            >
+              <option value="all">All Tags</option>
+              {tags.map((tag) => (
+                <option key={tag.id} value={tag.id}>
+                  {tag.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              style={selectStyle}
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.key} value={o.key}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={() => setShowAddModal(true)}
             style={{
-              flex: "1",
-              minWidth: "200px",
-              padding: "10px 14px",
+              padding: "10px 16px",
               borderRadius: "12px",
-              border: "1px solid #ddd",
+              border: "none",
+              background: "#5b21b6",
+              color: "white",
+              fontWeight: "600",
               fontSize: "14px",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
             }}
-          />
-
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={selectStyle}
           >
-            {STATUS_OPTIONS.map((o) => (
-              <option key={o.key} value={o.key}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={tagFilter}
-            onChange={(e) => setTagFilter(e.target.value)}
-            style={selectStyle}
-          >
-            <option value="all">All Tags</option>
-            {tags.map((tag) => (
-              <option key={tag.id} value={tag.id}>
-                {tag.name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            style={selectStyle}
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.key} value={o.key}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+            + Add Movie
+          </button>
         </div>
 
         {/* Result count */}
@@ -276,5 +302,14 @@ export default function VaultPage() {
         )}
       </section>
     </main>
+
+    {showAddModal && (
+      <AddMovieModal
+        memory={memory}
+        onSave={handleAddMovie}
+        onClose={() => setShowAddModal(false)}
+      />
+    )}
+    </>
   );
 }
