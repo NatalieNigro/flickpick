@@ -425,7 +425,7 @@ export default function VaultPage() {
             Nothing here yet. Start rating movies from the home page.
           </p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#f5f4f1", borderRadius: "16px", padding: "14px" }}>
             {displayed.map((movie, i) => {
               const movieKey = `${movie.title}-${movie.year}`;
               const cardOpenPanel =
