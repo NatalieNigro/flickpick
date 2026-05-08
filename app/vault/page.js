@@ -301,24 +301,8 @@ export default function VaultPage() {
             </select>
           </div>
 
-          {/* Row 2: action buttons right-aligned */}
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
-            <button
-              onClick={handleExport}
-              style={{
-                padding: "10px 16px",
-                borderRadius: "12px",
-                border: "1px solid #ddd",
-                background: "white",
-                color: "#666",
-                fontWeight: "500",
-                fontSize: "14px",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-            >
-              ⬇ Export Vault
-            </button>
+          {/* Row 2: Add Movie left, export actions right */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" }}>
             <button
               onClick={() => setShowAddModal(true)}
               style={{
@@ -335,6 +319,25 @@ export default function VaultPage() {
             >
               + Add Movie
             </button>
+
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={handleExport}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "12px",
+                  border: "1px solid #ddd",
+                  background: "white",
+                  color: "#666",
+                  fontWeight: "500",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ⬇ Export Vault
+              </button>
+            </div>
           </div>
         </div>
 
