@@ -84,19 +84,34 @@ Movies the user marked hard pass: ${hardPass}`,
   // ASK OMDb FOR MOVIE DETAILS
   // -----------------------------
 
+  async function omdbLookup(title, year) {
+    const params = new URLSearchParams({ t: title, plot: "full", apikey: process.env.OMDB_API_KEY });
+    if (year) params.set("y", year);
+    const res = await fetch(`https://www.omdbapi.com/?${params}`);
+    return res.json();
+  }
+
   async function getOmdbDetails(movie) {
-    const params = new URLSearchParams({
-      t: movie.title,
-      y: movie.year,
-      plot: "full",
-      apikey: process.env.OMDB_API_KEY,
-    });
+    let data = await omdbLookup(movie.title, movie.year);
 
-    const omdbResponse = await fetch(`https://www.omdbapi.com/?${params.toString()}`);
-    const omdbData = await omdbResponse.json();
+    // If no match or no poster, retry with the title stripped of any subtitle after a colon
+    const simplifiedTitle = movie.title.split(":")[0].trim();
+    if (
+      (data.Response === "False" || data.Poster === "N/A") &&
+      simplifiedTitle.toLowerCase() !== movie.title.toLowerCase()
+    ) {
+      const retry = await omdbLookup(simplifiedTitle, movie.year);
+      if (retry.Response !== "False") {
+        if (data.Response === "False") {
+          data = retry;
+        } else if (retry.Poster !== "N/A") {
+          // Keep original movie data but take the poster from the retry
+          data = { ...data, Poster: retry.Poster };
+        }
+      }
+    }
 
-    // If OMDb does not find a match, keep the AI result and fill in graceful blanks
-    if (omdbData.Response === "False") {
+    if (data.Response === "False") {
       return {
         ...movie,
         poster: "",
@@ -109,13 +124,13 @@ Movies the user marked hard pass: ${hardPass}`,
 
     return {
       ...movie,
-      title: omdbData.Title || movie.title,
-      year: omdbData.Year || movie.year,
-      poster: omdbData.Poster !== "N/A" ? omdbData.Poster : "",
-      genre: omdbData.Genre || "Genre unavailable",
-      actors: omdbData.Actors || "Actors unavailable",
-      plot: omdbData.Plot || "",
-      imdbRating: omdbData.imdbRating || "",
+      title: data.Title || movie.title,
+      year: data.Year || movie.year,
+      poster: data.Poster !== "N/A" ? data.Poster : "",
+      genre: data.Genre || "Genre unavailable",
+      actors: data.Actors || "Actors unavailable",
+      plot: data.Plot || "",
+      imdbRating: data.imdbRating || "",
       omdbFound: true,
     };
   }

@@ -71,7 +71,7 @@ export default function MovieCard({
           style={{
             width: "100%",
             height: "390px",
-            objectFit: "cover",
+            objectFit: "contain",
             display: "block",
             background: "#eee",
             borderRadius: "22px 22px 0 0",
