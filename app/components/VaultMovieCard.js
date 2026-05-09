@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TagSelector from "./TagSelector";
+import { isInPickList, saveToPickList, removeFromPickList } from "../utils/pickList";
 
 const STATUSES = [
   { key: "wantToWatch", label: "🎯 Want to Watch" },
@@ -29,6 +30,11 @@ export default function VaultMovieCard({
   const [notes, setNotes] = useState(movie.notes || "");
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [inPickList, setInPickList] = useState(false);
+
+  useEffect(() => {
+    setInPickList(isInPickList(movie));
+  }, [movie]);
   const [trashHovered, setTrashHovered] = useState(false);
   const [picking, setPicking] = useState(false);
   const [pickLoading, setPickLoading] = useState(false);
@@ -329,22 +335,47 @@ export default function VaultMovieCard({
         <>
       {/* Notes section */}
       <div style={{ padding: `${hasTags ? 0 : 10}px 16px 8px` }}>
-        <span ref={notesRef} style={{ display: "inline-block" }}>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+          <span ref={notesRef} style={{ display: "inline-block" }}>
+            <button
+              onClick={handleNotesToggle}
+              style={{
+                padding: "4px 10px",
+                borderRadius: "999px",
+                border: notesOpen ? "2px solid #5b21b6" : "1px solid #ddd",
+                background: notesOpen ? "#ede9fe" : "#fff",
+                fontWeight: notesOpen ? "700" : "500",
+                fontSize: "12px",
+                cursor: "pointer",
+              }}
+            >
+              📝 Notes{notes ? " ·" : ""}
+            </button>
+          </span>
+
           <button
-            onClick={handleNotesToggle}
+            onClick={() => {
+              if (inPickList) {
+                removeFromPickList(movie.title, movie.year);
+                setInPickList(false);
+              } else {
+                saveToPickList(movie);
+                setInPickList(true);
+              }
+            }}
             style={{
               padding: "4px 10px",
               borderRadius: "999px",
-              border: notesOpen ? "2px solid #5b21b6" : "1px solid #ddd",
-              background: notesOpen ? "#ede9fe" : "#fff",
-              fontWeight: notesOpen ? "700" : "500",
+              border: inPickList ? "1px solid #5b21b6" : "1px solid #ddd",
+              background: inPickList ? "#ede9fe" : "#fff",
+              fontWeight: "600",
               fontSize: "12px",
               cursor: "pointer",
             }}
           >
-            📝 Notes{notes ? " ·" : ""}
+            {inPickList ? "✔ Added" : "+ Add to Pick List"}
           </button>
-        </span>
+        </div>
 
         {notesOpen && (
           <textarea

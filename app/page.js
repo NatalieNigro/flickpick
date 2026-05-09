@@ -8,6 +8,8 @@ import {
   getLastResults,
   saveLastResults,
 } from "./utils/memory";
+import { getPreferenceProfile, savePreferenceProfile } from "./utils/preferenceProfile";
+import { getTags } from "./utils/tags";
 
 export default function Home() {
   const [vibe, setVibe] = useState("");
@@ -78,15 +80,20 @@ export default function Home() {
     setMovies([]);
 
     try {
+      const tasteProfile = getPreferenceProfile();
+      const tags = getTags();
+
       const res = await fetch("/api/pick", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ vibe, memory }),
+        body: JSON.stringify({ vibe, memory, tasteProfile, tags }),
       });
 
       const data = await res.json();
+
+      if (data.tasteProfile) savePreferenceProfile(data.tasteProfile);
 
       const newIntro = data.intro || "";
       const newMovies = data.movies || [];
