@@ -1,43 +1,134 @@
-// This API route does two jobs:
-// 1. Ask OpenAI for movie recommendations
-// 2. Ask OMDb for richer movie details like poster, genre, actors, and plot
-
 export async function POST(req) {
-  const { vibe, memory } = await req.json();
+  const { vibe, memory, tasteProfile, tags } = await req.json();
+
+  const totalMovies = (memory || []).length;
+  const hasUMPP = !!(tasteProfile && tasteProfile.trim());
+  const requestTasteProfile = totalMovies > 100 && !hasUMPP;
+
+  function getTagName(id) {
+    return tags?.find((t) => t.id === id)?.name || null;
+  }
 
   // -----------------------------
-  // ORGANIZE SAVED MEMORY FOR AI
+  // BUILD PROMPT CONTENT BY MODE
   // -----------------------------
 
-  const loved =
-    memory
-      ?.filter((movie) => movie.status === "loved")
-      .map((movie) => `${movie.title} (${movie.year})`)
-      .join(", ") || "none yet";
+  let userContent;
 
-  const wantToWatch =
-    memory
-      ?.filter((movie) => movie.status === "wantToWatch")
-      .map((movie) => `${movie.title} (${movie.year})`)
-      .join(", ") || "none yet";
+  if (totalMovies > 100 && hasUMPP) {
+    // Mode 2: >100 movies + UMPP — concise (loved + notes, not interested, hard pass, profile)
+    const lovedList =
+      memory
+        .filter((m) => m.status === "loved")
+        .map((m) =>
+          m.notes ? `${m.title} (${m.year}) — "${m.notes}"` : `${m.title} (${m.year})`
+        )
+        .join("\n") || "none yet";
 
-  const notInterested =
-    memory
-      ?.filter((movie) => movie.status === "notInterested")
-      .map((movie) => `${movie.title} (${movie.year})`)
-      .join(", ") || "none yet";
+    const notInterestedList =
+      memory
+        .filter((m) => m.status === "notInterested")
+        .map((m) => `${m.title} (${m.year})`)
+        .join(", ") || "none yet";
 
-  const meh =
-    memory
-      ?.filter((movie) => movie.status === "meh")
-      .map((movie) => `${movie.title} (${movie.year})`)
-      .join(", ") || "none yet";
+    const hardPassList =
+      memory
+        .filter((m) => m.status === "hardPass")
+        .map((m) =>
+          m.notes ? `${m.title} (${m.year}) — "${m.notes}"` : `${m.title} (${m.year})`
+        )
+        .join(", ") || "none yet";
 
-  const hardPass =
-    memory
-      ?.filter((movie) => movie.status === "hardPass")
-      .map((movie) => `${movie.title} (${movie.year})`)
-      .join(", ") || "none yet";
+    userContent = `Tonight's vibe: ${vibe}
+
+My taste profile: ${tasteProfile}
+
+Movies I loved:
+${lovedList}
+
+Movies I never want to see: ${notInterestedList}
+
+Movies that are a hard pass: ${hardPassList}`;
+  } else {
+    // Mode 1 (≤100 movies) or Mode 3 (>100, no UMPP): full lists
+    const lovedList =
+      memory
+        ?.filter((m) => m.status === "loved")
+        .map((m) =>
+          m.notes ? `${m.title} (${m.year}) — "${m.notes}"` : `${m.title} (${m.year})`
+        )
+        .join("\n") || "none yet";
+
+    const wantToWatchList =
+      memory
+        ?.filter((m) => m.status === "wantToWatch")
+        .map((m) => `${m.title} (${m.year})`)
+        .join(", ") || "none yet";
+
+    const mehList =
+      memory
+        ?.filter((m) => m.status === "meh")
+        .map((m) => `${m.title} (${m.year})`)
+        .join(", ") || "none yet";
+
+    const notInterestedList =
+      memory
+        ?.filter((m) => m.status === "notInterested")
+        .map((m) => `${m.title} (${m.year})`)
+        .join(", ") || "none yet";
+
+    const hardPassList =
+      memory
+        ?.filter((m) => m.status === "hardPass")
+        .map((m) =>
+          m.notes ? `${m.title} (${m.year}) — "${m.notes}"` : `${m.title} (${m.year})`
+        )
+        .join(", ") || "none yet";
+
+    const tagMoviesMap = new Map();
+    memory?.filter((m) => m.status === "loved").forEach((m) => {
+      (m.tagIds || []).forEach((tagId) => {
+        const tagName = getTagName(tagId);
+        if (tagName) {
+          if (!tagMoviesMap.has(tagName)) tagMoviesMap.set(tagName, []);
+          tagMoviesMap.get(tagName).push(`${m.title} (${m.year})`);
+        }
+      });
+    });
+    const tagLines = [...tagMoviesMap.entries()]
+      .map(([name, movies]) => `Movies tagged "${name}": ${movies.join(", ")}`)
+      .join("\n");
+    const tagLine = tagLines ? `\n${tagLines}` : "";
+
+    const umppLine = hasUMPP ? `\nMy taste profile: ${tasteProfile}\n` : "";
+
+    userContent = `Tonight's vibe: ${vibe}
+${umppLine}
+Movies I loved:
+${lovedList}
+
+Movies I want to watch: ${wantToWatchList}
+
+Movies I felt meh about: ${mehList}
+
+Movies I'm not interested in: ${notInterestedList}
+
+Movies that are a hard pass: ${hardPassList}${tagLine}`;
+  }
+
+  // -----------------------------
+  // SYSTEM PROMPT
+  // -----------------------------
+
+  const tasteProfileInstruction = requestTasteProfile
+    ? ` Also include a "tasteProfile" field: a concise plain-text paragraph (2–4 sentences) capturing what this person enjoys in movies, based on patterns in their Loved and Hard Pass lists. Write it in second person (e.g. "You tend to love...").`
+    : "";
+
+  const responseShape = requestTasteProfile
+    ? `{ "intro": "...", "movies": [...], "tasteProfile": "..." }`
+    : `{ "intro": "...", "movies": [...] }`;
+
+  const systemPrompt = `You are FlickPick, a cozy, witty movie recommendation assistant. Use the user's saved movie memory to make smarter suggestions. Never recommend movies marked Hard Pass or Not Interested. NEVER recommend movies that appear in the Want to Watch list. Treat Want to Watch movies the same as Hard Pass movies — they are completely off limits for recommendations. Notes on Loved and Hard Pass movies reveal why the user feels that way — use them. Tags signal genre and mood preferences — each tag line tells you exactly which movies share that quality.${tasteProfileInstruction} Return ONLY valid JSON with this shape: ${responseShape} where movies is exactly 3 items, each with { "title": "...", "year": "...", "why": "..." }.`;
 
   // -----------------------------
   // ASK OPENAI FOR 3 MOVIE PICKS
@@ -53,25 +144,8 @@ export async function POST(req) {
       model: "gpt-4o-mini",
       response_format: { type: "json_object" },
       messages: [
-        {
-          role: "system",
-          content:
-            "You are FlickPick, a cozy, witty movie recommendation assistant. Use the user's saved movie memory to make smarter suggestions. Do not recommend movies marked Hard Pass or Not Interested. Avoid recommending movies already marked Want to Watch unless the user asks to revisit saved options. Return ONLY valid JSON with this exact shape: { \"intro\": \"short playful intro\", \"movies\": [ { \"title\": \"Movie Title\", \"year\": \"Year\", \"why\": \"Short warm explanation of why this fits the user's vibe and preferences\" } ] }. Recommend exactly 3 movies.",
-        },
-        {
-          role: "user",
-          content: `Tonight's vibe: ${vibe}
-
-Movies the user loved: ${loved}
-
-Movies the user wants to watch: ${wantToWatch}
-
-Movies the user felt meh about: ${meh}
-
-Movies the user is not interested in: ${notInterested}
-
-Movies the user marked hard pass: ${hardPass}`,
-        },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userContent },
       ],
     }),
   });
@@ -94,7 +168,6 @@ Movies the user marked hard pass: ${hardPass}`,
   async function getOmdbDetails(movie) {
     let data = await omdbLookup(movie.title, movie.year);
 
-    // If no match or no poster, retry with the title stripped of any subtitle after a colon
     const simplifiedTitle = movie.title.split(":")[0].trim();
     if (
       (data.Response === "False" || data.Poster === "N/A") &&
@@ -105,7 +178,6 @@ Movies the user marked hard pass: ${hardPass}`,
         if (data.Response === "False") {
           data = retry;
         } else if (retry.Poster !== "N/A") {
-          // Keep original movie data but take the poster from the retry
           data = { ...data, Poster: retry.Poster };
         }
       }
@@ -146,5 +218,6 @@ Movies the user marked hard pass: ${hardPass}`,
   return Response.json({
     intro: aiResult.intro,
     movies: enrichedMovies,
+    ...(aiResult.tasteProfile ? { tasteProfile: aiResult.tasteProfile } : {}),
   });
 }
