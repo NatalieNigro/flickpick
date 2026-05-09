@@ -142,7 +142,7 @@ export default function ImportMovieModal({ memory, onImport, onClose }) {
   const [tags] = useState(() => getTags());
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
-  const [phase, setPhase] = useState("upload");
+  const [phase, setPhase] = useState("welcome");
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [summary, setSummary] = useState(null);
   const fileInputRef = useRef(null);
@@ -156,10 +156,32 @@ export default function ImportMovieModal({ memory, onImport, onClose }) {
     if (f?.name.toLowerCase().endsWith(".csv")) setFile(f);
   }
 
+  function downloadTemplate() {
+    function cell(v) {
+      const s = String(v ?? "");
+      return s.includes(",") || s.includes('"') || s.includes("\n")
+        ? `"${s.replace(/"/g, '""')}"` : s;
+    }
+    const rows = [
+      ["Title", "Year", "Status", "Tags", "Notes"],
+      ["The Shawshank Redemption", "1994", "Loved", "Drama;Classics", "One of the greatest films ever made"],
+      ["Parasite", "", "", "", ""],
+      ["# Valid Status values: Loved, Meh, Hard Pass, Want to Watch, Not Interested  —  Separate multiple Tags with semicolons e.g. Action;Comedy", "", "", "", ""],
+    ];
+    const csv = rows.map((r) => r.map(cell).join(",")).join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "flickpick-import-template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function handleImport() {
     if (!file) return;
     const text = await file.text();
-    const rows = parseCSV(text).filter((r) => r["title"]?.trim());
+    const rows = parseCSV(text).filter((r) => r["title"]?.trim() && !r["title"].trim().startsWith("#"));
     if (rows.length === 0) return;
 
     setPhase("processing");
@@ -233,7 +255,7 @@ export default function ImportMovieModal({ memory, onImport, onClose }) {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-          <h2 style={{ margin: 0, fontSize: "22px" }}>Import Movies to Vault</h2>
+          <h2 style={{ margin: 0, fontSize: "22px" }}>Import Movies to Your Vault</h2>
           {canClose && (
             <button
               onClick={onClose}
@@ -243,6 +265,64 @@ export default function ImportMovieModal({ memory, onImport, onClose }) {
             </button>
           )}
         </div>
+
+        {phase === "welcome" && (
+          <>
+            <p style={{ fontSize: "14px", color: "#666", marginBottom: "24px", lineHeight: "1.6" }}>
+              Download the template to see the exact format expected, then fill it in and import.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <button
+                onClick={downloadTemplate}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "16px 20px",
+                  borderRadius: "14px",
+                  border: "1px solid #ddd",
+                  background: "white",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                <span style={{ fontSize: "26px", lineHeight: 1 }}>⬇</span>
+                <div>
+                  <div style={{ fontWeight: "600", fontSize: "15px", color: "#111" }}>Download Template</div>
+                  <div style={{ fontSize: "13px", color: "#888", marginTop: "3px" }}>
+                    CSV with correct columns and example rows
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setPhase("upload")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "16px 20px",
+                  borderRadius: "14px",
+                  border: "none",
+                  background: "#5b21b6",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                <span style={{ fontSize: "26px", lineHeight: 1 }}>⬆</span>
+                <div>
+                  <div style={{ fontWeight: "600", fontSize: "15px", color: "white" }}>Choose File to Import</div>
+                  <div style={{ fontSize: "13px", color: "#c4b5fd", marginTop: "3px" }}>
+                    Upload your CSV and add movies to your Vault
+                  </div>
+                </div>
+              </button>
+            </div>
+          </>
+        )}
 
         {phase === "upload" && (
           <>
