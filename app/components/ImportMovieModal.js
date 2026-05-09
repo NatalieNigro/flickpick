@@ -176,6 +176,7 @@ export default function ImportMovieModal({ memory, onImport, onClose }) {
     a.download = "flickpick-import-template.csv";
     a.click();
     URL.revokeObjectURL(url);
+    onClose();
   }
 
   async function handleImport() {
@@ -305,8 +306,8 @@ export default function ImportMovieModal({ memory, onImport, onClose }) {
                   gap: "16px",
                   padding: "16px 20px",
                   borderRadius: "14px",
-                  border: "none",
-                  background: "#5b21b6",
+                  border: "1px solid #c4b5fd",
+                  background: "#ede9fe",
                   cursor: "pointer",
                   textAlign: "left",
                   width: "100%",
@@ -314,8 +315,8 @@ export default function ImportMovieModal({ memory, onImport, onClose }) {
               >
                 <span style={{ fontSize: "26px", lineHeight: 1 }}>⬆</span>
                 <div>
-                  <div style={{ fontWeight: "600", fontSize: "15px", color: "white" }}>Choose File to Import</div>
-                  <div style={{ fontSize: "13px", color: "#c4b5fd", marginTop: "3px" }}>
+                  <div style={{ fontWeight: "600", fontSize: "15px", color: "#5b21b6" }}>Choose File to Import</div>
+                  <div style={{ fontSize: "13px", color: "#7c3aed", marginTop: "3px" }}>
                     Upload your CSV and add movies to your Vault
                   </div>
                 </div>
